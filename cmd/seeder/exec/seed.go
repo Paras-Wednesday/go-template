@@ -36,7 +36,6 @@ func main() {
 		cmd.Stderr = &errb
 		err := cmd.Run()
 		if err != nil {
-			fmt.Printf("file: %s, out: %s, err: %s\n", file.Name(), outb.String(), errb.String())
 			log.Fatalf("couldn't run the command: %s", err)
 		}
 		fmt.Printf("file: %s, out: %s, err: %s\n", file.Name(), outb.String(), errb.String())

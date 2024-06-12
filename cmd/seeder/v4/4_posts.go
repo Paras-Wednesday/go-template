@@ -15,7 +15,7 @@ import (
 func main() {
 	err := config.LoadEnv()
 	if err != nil {
-		log.Fatalf("couldn't load the evn: %s", err)
+		log.Fatalf("couldn't load the env: %s", err)
 	}
 	db, err := postgres.Connect()
 	if err != nil {

@@ -6,6 +6,7 @@ import (
 	"log"
 
 	"go-template/cmd/seeder/utls"
+	"go-template/internal/config"
 	"go-template/internal/postgres"
 	"go-template/models"
 	"go-template/pkg/utl/secure"
@@ -14,11 +15,10 @@ import (
 )
 
 func main() {
-	// err := config.LoadEnv()
-	// if err != nil {
-	// 	log.Println(err)
-
-	// }
+	err := config.LoadEnv()
+	if err != nil {
+		log.Println(err)
+	}
 	sec := secure.New(1, nil)
 	db, err := postgres.Connect()
 	if err != nil {

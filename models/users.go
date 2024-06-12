@@ -119,30 +119,6 @@ var UserTableColumns = struct {
 
 // Generated where
 
-type whereHelpernull_String struct{ field string }
-
-func (w whereHelpernull_String) EQ(x null.String) qm.QueryMod {
-	return qmhelper.WhereNullEQ(w.field, false, x)
-}
-func (w whereHelpernull_String) NEQ(x null.String) qm.QueryMod {
-	return qmhelper.WhereNullEQ(w.field, true, x)
-}
-func (w whereHelpernull_String) LT(x null.String) qm.QueryMod {
-	return qmhelper.Where(w.field, qmhelper.LT, x)
-}
-func (w whereHelpernull_String) LTE(x null.String) qm.QueryMod {
-	return qmhelper.Where(w.field, qmhelper.LTE, x)
-}
-func (w whereHelpernull_String) GT(x null.String) qm.QueryMod {
-	return qmhelper.Where(w.field, qmhelper.GT, x)
-}
-func (w whereHelpernull_String) GTE(x null.String) qm.QueryMod {
-	return qmhelper.Where(w.field, qmhelper.GTE, x)
-}
-
-func (w whereHelpernull_String) IsNull() qm.QueryMod    { return qmhelper.WhereIsNull(w.field) }
-func (w whereHelpernull_String) IsNotNull() qm.QueryMod { return qmhelper.WhereIsNotNull(w.field) }
-
 type whereHelpernull_Bool struct{ field string }
 
 func (w whereHelpernull_Bool) EQ(x null.Bool) qm.QueryMod {
@@ -799,7 +775,7 @@ func (o UserSlice) UpdateAll(ctx context.Context, exec boil.ContextExecutor, col
 
 // Upsert attempts an insert using an executor, and does an update or ignore on conflict.
 // See boil.Columns documentation for how to properly use updateColumns and insertColumns.
-func (o *User) Upsert(ctx context.Context, exec boil.ContextExecutor, updateOnConflict bool, conflictColumns []string, updateColumns, insertColumns boil.Columns) error {
+func (o *User) Upsert(ctx context.Context, exec boil.ContextExecutor, updateOnConflict bool, conflictColumns []string, updateColumns, insertColumns boil.Columns, opts ...UpsertOptionFunc) error {
 	if o == nil {
 		return errors.New("models: no users provided for upsert")
 	}
@@ -849,7 +825,7 @@ func (o *User) Upsert(ctx context.Context, exec boil.ContextExecutor, updateOnCo
 	var err error
 
 	if !cached {
-		insert, ret := insertColumns.InsertColumnSet(
+		insert, _ := insertColumns.InsertColumnSet(
 			userAllColumns,
 			userColumnsWithDefault,
 			userColumnsWithoutDefault,
@@ -865,12 +841,18 @@ func (o *User) Upsert(ctx context.Context, exec boil.ContextExecutor, updateOnCo
 			return errors.New("models: unable to upsert users, could not build update column list")
 		}
 
+		ret := strmangle.SetComplement(userAllColumns, strmangle.SetIntersect(insert, update))
+
 		conflict := conflictColumns
-		if len(conflict) == 0 {
+		if len(conflict) == 0 && updateOnConflict && len(update) != 0 {
+			if len(userPrimaryKeyColumns) == 0 {
+				return errors.New("models: unable to upsert users, could not build conflict column list")
+			}
+
 			conflict = make([]string, len(userPrimaryKeyColumns))
 			copy(conflict, userPrimaryKeyColumns)
 		}
-		cache.query = buildUpsertQueryPostgres(dialect, "\"users\"", updateOnConflict, ret, update, conflict, insert)
+		cache.query = buildUpsertQueryPostgres(dialect, "\"users\"", updateOnConflict, ret, update, conflict, insert, opts...)
 
 		cache.valueMapping, err = queries.BindMapping(userType, userMapping, insert)
 		if err != nil {
@@ -898,7 +880,7 @@ func (o *User) Upsert(ctx context.Context, exec boil.ContextExecutor, updateOnCo
 	}
 	if len(cache.retMapping) != 0 {
 		err = exec.QueryRowContext(ctx, cache.query, vals...).Scan(returns...)
-		if err == sql.ErrNoRows {
+		if errors.Is(err, sql.ErrNoRows) {
 			err = nil // Postgres doesn't return anything when there's no update
 		}
 	} else {

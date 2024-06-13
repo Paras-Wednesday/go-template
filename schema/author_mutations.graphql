@@ -1,0 +1,4 @@
+extend type Mutation {
+    createAuthor(input: AuthorCreateInput!): Author!
+    updateAuthor(input: AuthorUpdateInput!): Author!
+}

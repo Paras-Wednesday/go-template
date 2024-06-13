@@ -1,0 +1,32 @@
+type Author {
+    id: ID!
+    firstName: String!
+    lastName: String
+    createdAt: Int
+    updatedAt: Int
+    deletedAt: Int
+}
+
+input AuthorWhere {
+    id: IDFilter
+    firstName: StringFilter
+    lastName: StringFilter
+    createdAt: IntFilter
+    updatedAt: IntFilter
+    deletedAt: IntFilter
+}
+
+input AuthorCreateInput {
+    firstName: String!
+    lastName: String
+}
+
+input AuthorUpdateInput {
+    firstName: String
+    lastName: String
+}
+
+input AuthorPagination {
+    limit: Int!
+    page: Int!
+}

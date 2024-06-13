@@ -2,6 +2,39 @@
 
 package gqlmodels
 
+type Author struct {
+	ID        string  `json:"id"`
+	FirstName string  `json:"firstName"`
+	LastName  *string `json:"lastName"`
+	CreatedAt *int    `json:"createdAt"`
+	UpdatedAt *int    `json:"updatedAt"`
+	DeletedAt *int    `json:"deletedAt"`
+}
+
+type AuthorCreateInput struct {
+	FirstName string  `json:"firstName"`
+	LastName  *string `json:"lastName"`
+}
+
+type AuthorPagination struct {
+	Limit int `json:"limit"`
+	Page  int `json:"page"`
+}
+
+type AuthorUpdateInput struct {
+	FirstName *string `json:"firstName"`
+	LastName  *string `json:"lastName"`
+}
+
+type AuthorWhere struct {
+	ID        *IDFilter     `json:"id"`
+	FirstName *StringFilter `json:"firstName"`
+	LastName  *StringFilter `json:"lastName"`
+	CreatedAt *IntFilter    `json:"createdAt"`
+	UpdatedAt *IntFilter    `json:"updatedAt"`
+	DeletedAt *IntFilter    `json:"deletedAt"`
+}
+
 type BooleanFilter struct {
 	IsTrue  *bool `json:"isTrue"`
 	IsFalse *bool `json:"isFalse"`
@@ -44,6 +77,33 @@ type IntFilter struct {
 type LoginResponse struct {
 	Token        string `json:"token"`
 	RefreshToken string `json:"refreshToken"`
+}
+
+type Post struct {
+	ID        string `json:"id"`
+	AuthorID  string `json:"authorID"`
+	Content   string `json:"content"`
+	CreatedAt *int   `json:"createdAt"`
+	UpdatedAt *int   `json:"updatedAt"`
+	DeletedAt *int   `json:"deletedAt"`
+}
+
+type PostCreateInput struct {
+	AuthorID string `json:"authorID"`
+	Content  string `json:"content"`
+}
+
+type PostUpdateInput struct {
+	ID      string `json:"id"`
+	Content string `json:"content"`
+}
+
+type PostWhere struct {
+	ID        *IDFilter  `json:"id"`
+	AuthorID  *IDFilter  `json:"authorID"`
+	CreatedAt *IntFilter `json:"createdAt"`
+	UpdatedAt *IntFilter `json:"updatedAt"`
+	DeletedAt *IntFilter `json:"deletedAt"`
 }
 
 type RefreshTokenResponse struct {

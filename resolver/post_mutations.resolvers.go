@@ -16,7 +16,7 @@ func (r *mutationResolver) CreatePost(ctx context.Context, input gqlmodels.PostC
 }
 
 // UpdatePost is the resolver for the updatePost field.
-func (r *mutationResolver) UpdatePost(ctx context.Context, input *gqlmodels.PostUpdateInput) (*gqlmodels.Post, error) {
+func (r *mutationResolver) UpdatePost(ctx context.Context, input gqlmodels.PostUpdateInput) (*gqlmodels.Post, error) {
 	panic(fmt.Errorf("not implemented: UpdatePost - updatePost"))
 }
 

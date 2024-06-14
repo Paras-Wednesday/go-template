@@ -7,21 +7,6 @@ type Post {
     deletedAt: Int
 }
 
-input PostFilter {
-    search: String
-    where: PostWhere
-}
-
-input PostWhere {
-    id: IDFilter
-    authorID: IDFilter
-    lastName: StringFilter
-    content: StringFilter
-    createdAt: IntFilter
-    updatedAt: IntFilter
-    deletedAt: IntFilter
-}
-
 input PostCreateInput {
     authorID: ID!
     content: String!
@@ -37,6 +22,6 @@ input PostDeleteInput {
 }
 
 type PostsPayload {
-    posts: [Post!]!
+    posts: [Post!]
     total: Int!
 }

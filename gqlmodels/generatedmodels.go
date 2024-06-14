@@ -20,24 +20,10 @@ type AuthorDeleteInput struct {
 	ID string `json:"id"`
 }
 
-type AuthorFilter struct {
-	Search *string      `json:"search"`
-	Where  *AuthorWhere `json:"where"`
-}
-
 type AuthorUpdateInput struct {
 	ID        string  `json:"id"`
 	FirstName *string `json:"firstName"`
 	LastName  *string `json:"lastName"`
-}
-
-type AuthorWhere struct {
-	ID        *IDFilter     `json:"id"`
-	FirstName *StringFilter `json:"firstName"`
-	LastName  *StringFilter `json:"lastName"`
-	CreatedAt *IntFilter    `json:"createdAt"`
-	UpdatedAt *IntFilter    `json:"updatedAt"`
-	DeletedAt *IntFilter    `json:"deletedAt"`
 }
 
 type AuthorsPayload struct {
@@ -112,24 +98,9 @@ type PostDeleteInput struct {
 	ID string `json:"id"`
 }
 
-type PostFilter struct {
-	Search *string    `json:"search"`
-	Where  *PostWhere `json:"where"`
-}
-
 type PostUpdateInput struct {
 	ID      string `json:"id"`
 	Content string `json:"content"`
-}
-
-type PostWhere struct {
-	ID        *IDFilter     `json:"id"`
-	AuthorID  *IDFilter     `json:"authorID"`
-	LastName  *StringFilter `json:"lastName"`
-	Content   *StringFilter `json:"content"`
-	CreatedAt *IntFilter    `json:"createdAt"`
-	UpdatedAt *IntFilter    `json:"updatedAt"`
-	DeletedAt *IntFilter    `json:"deletedAt"`
 }
 
 type PostsPayload struct {

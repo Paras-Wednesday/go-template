@@ -73,13 +73,13 @@ type ComplexityRoot struct {
 		CreatePost     func(childComplexity int, input PostCreateInput) int
 		CreateRole     func(childComplexity int, input RoleCreateInput) int
 		CreateUser     func(childComplexity int, input UserCreateInput) int
-		DeleteAuthor   func(childComplexity int, input *AuthorDeleteInput) int
+		DeleteAuthor   func(childComplexity int, input AuthorDeleteInput) int
 		DeletePost     func(childComplexity int, input PostDeleteInput) int
 		DeleteUser     func(childComplexity int) int
 		Login          func(childComplexity int, username string, password string) int
 		RefreshToken   func(childComplexity int, token string) int
-		UpdateAuthor   func(childComplexity int, input *AuthorUpdateInput) int
-		UpdatePost     func(childComplexity int, input *PostUpdateInput) int
+		UpdateAuthor   func(childComplexity int, input AuthorUpdateInput) int
+		UpdatePost     func(childComplexity int, input PostUpdateInput) int
 		UpdateUser     func(childComplexity int, input *UserUpdateInput) int
 	}
 
@@ -182,10 +182,10 @@ type MutationResolver interface {
 	ChangePassword(ctx context.Context, oldPassword string, newPassword string) (*ChangePasswordResponse, error)
 	RefreshToken(ctx context.Context, token string) (*RefreshTokenResponse, error)
 	CreateAuthor(ctx context.Context, input AuthorCreateInput) (*Author, error)
-	UpdateAuthor(ctx context.Context, input *AuthorUpdateInput) (*Author, error)
-	DeleteAuthor(ctx context.Context, input *AuthorDeleteInput) (*Author, error)
+	UpdateAuthor(ctx context.Context, input AuthorUpdateInput) (*Author, error)
+	DeleteAuthor(ctx context.Context, input AuthorDeleteInput) (*Author, error)
 	CreatePost(ctx context.Context, input PostCreateInput) (*Post, error)
-	UpdatePost(ctx context.Context, input *PostUpdateInput) (*Post, error)
+	UpdatePost(ctx context.Context, input PostUpdateInput) (*Post, error)
 	DeletePost(ctx context.Context, input PostDeleteInput) (*Post, error)
 	CreateRole(ctx context.Context, input RoleCreateInput) (*RolePayload, error)
 	CreateUser(ctx context.Context, input UserCreateInput) (*User, error)
@@ -366,7 +366,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Mutation.DeleteAuthor(childComplexity, args["input"].(*AuthorDeleteInput)), true
+		return e.complexity.Mutation.DeleteAuthor(childComplexity, args["input"].(AuthorDeleteInput)), true
 
 	case "Mutation.deletePost":
 		if e.complexity.Mutation.DeletePost == nil {
@@ -421,7 +421,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Mutation.UpdateAuthor(childComplexity, args["input"].(*AuthorUpdateInput)), true
+		return e.complexity.Mutation.UpdateAuthor(childComplexity, args["input"].(AuthorUpdateInput)), true
 
 	case "Mutation.updatePost":
 		if e.complexity.Mutation.UpdatePost == nil {
@@ -433,7 +433,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Mutation.UpdatePost(childComplexity, args["input"].(*PostUpdateInput)), true
+		return e.complexity.Mutation.UpdatePost(childComplexity, args["input"].(PostUpdateInput)), true
 
 	case "Mutation.updateUser":
 		if e.complexity.Mutation.UpdateUser == nil {
@@ -818,9 +818,7 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 	inputUnmarshalMap := graphql.BuildUnmarshalerMap(
 		ec.unmarshalInputAuthorCreateInput,
 		ec.unmarshalInputAuthorDeleteInput,
-		ec.unmarshalInputAuthorFilter,
 		ec.unmarshalInputAuthorUpdateInput,
-		ec.unmarshalInputAuthorWhere,
 		ec.unmarshalInputBooleanFilter,
 		ec.unmarshalInputFloatFilter,
 		ec.unmarshalInputIDFilter,
@@ -828,9 +826,7 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 		ec.unmarshalInputPagination,
 		ec.unmarshalInputPostCreateInput,
 		ec.unmarshalInputPostDeleteInput,
-		ec.unmarshalInputPostFilter,
 		ec.unmarshalInputPostUpdateInput,
-		ec.unmarshalInputPostWhere,
 		ec.unmarshalInputRoleCreateInput,
 		ec.unmarshalInputRoleFilter,
 		ec.unmarshalInputRolePagination,
@@ -934,20 +930,6 @@ var sources = []*ast.Source{
     deletedAt: Int
 }
 
-input AuthorFilter {
-    search: String
-    where: AuthorWhere
-}
-
-input AuthorWhere {
-    id: IDFilter
-    firstName: StringFilter
-    lastName: StringFilter
-    createdAt: IntFilter
-    updatedAt: IntFilter
-    deletedAt: IntFilter
-}
-
 input AuthorCreateInput {
     firstName: String!
     lastName: String!
@@ -964,13 +946,13 @@ input AuthorDeleteInput {
 }
 
 type AuthorsPayload {
-    authors: [Author!]!
+    authors: [Author!]
     total: Int!
 }`, BuiltIn: false},
 	{Name: "../schema/author_mutations.graphql", Input: `extend type Mutation {
     createAuthor(input: AuthorCreateInput!): Author!
-    updateAuthor(input: AuthorUpdateInput): Author!
-    deleteAuthor(input: AuthorDeleteInput): Author!
+    updateAuthor(input: AuthorUpdateInput!): Author!
+    deleteAuthor(input: AuthorDeleteInput!): Author!
 }`, BuiltIn: false},
 	{Name: "../schema/author_queries.graphql", Input: `extend type Query {
     author(id: ID!): Author!
@@ -1043,21 +1025,6 @@ input BooleanFilter {
     deletedAt: Int
 }
 
-input PostFilter {
-    search: String
-    where: PostWhere
-}
-
-input PostWhere {
-    id: IDFilter
-    authorID: IDFilter
-    lastName: StringFilter
-    content: StringFilter
-    createdAt: IntFilter
-    updatedAt: IntFilter
-    deletedAt: IntFilter
-}
-
 input PostCreateInput {
     authorID: ID!
     content: String!
@@ -1073,12 +1040,12 @@ input PostDeleteInput {
 }
 
 type PostsPayload {
-    posts: [Post!]!
+    posts: [Post!]
     total: Int!
 }`, BuiltIn: false},
 	{Name: "../schema/post_mutations.graphql", Input: `extend type Mutation {
     createPost(input: PostCreateInput!): Post!
-    updatePost(input: PostUpdateInput): Post!
+    updatePost(input: PostUpdateInput!): Post!
     deletePost(input: PostDeleteInput!): Post!
 }`, BuiltIn: false},
 	{Name: "../schema/post_queries.graphql", Input: `extend type Query{
@@ -1358,10 +1325,10 @@ func (ec *executionContext) field_Mutation_createUser_args(ctx context.Context, 
 func (ec *executionContext) field_Mutation_deleteAuthor_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
-	var arg0 *AuthorDeleteInput
+	var arg0 AuthorDeleteInput
 	if tmp, ok := rawArgs["input"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
-		arg0, err = ec.unmarshalOAuthorDeleteInput2ᚖgoᚑtemplateᚋgqlmodelsᚐAuthorDeleteInput(ctx, tmp)
+		arg0, err = ec.unmarshalNAuthorDeleteInput2goᚑtemplateᚋgqlmodelsᚐAuthorDeleteInput(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -1427,10 +1394,10 @@ func (ec *executionContext) field_Mutation_refreshToken_args(ctx context.Context
 func (ec *executionContext) field_Mutation_updateAuthor_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
-	var arg0 *AuthorUpdateInput
+	var arg0 AuthorUpdateInput
 	if tmp, ok := rawArgs["input"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
-		arg0, err = ec.unmarshalOAuthorUpdateInput2ᚖgoᚑtemplateᚋgqlmodelsᚐAuthorUpdateInput(ctx, tmp)
+		arg0, err = ec.unmarshalNAuthorUpdateInput2goᚑtemplateᚋgqlmodelsᚐAuthorUpdateInput(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -1442,10 +1409,10 @@ func (ec *executionContext) field_Mutation_updateAuthor_args(ctx context.Context
 func (ec *executionContext) field_Mutation_updatePost_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
-	var arg0 *PostUpdateInput
+	var arg0 PostUpdateInput
 	if tmp, ok := rawArgs["input"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
-		arg0, err = ec.unmarshalOPostUpdateInput2ᚖgoᚑtemplateᚋgqlmodelsᚐPostUpdateInput(ctx, tmp)
+		arg0, err = ec.unmarshalNPostUpdateInput2goᚑtemplateᚋgqlmodelsᚐPostUpdateInput(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -1873,14 +1840,11 @@ func (ec *executionContext) _AuthorsPayload_authors(ctx context.Context, field g
 		return graphql.Null
 	}
 	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
 		return graphql.Null
 	}
 	res := resTmp.([]*Author)
 	fc.Result = res
-	return ec.marshalNAuthor2ᚕᚖgoᚑtemplateᚋgqlmodelsᚐAuthorᚄ(ctx, field.Selections, res)
+	return ec.marshalOAuthor2ᚕᚖgoᚑtemplateᚋgqlmodelsᚐAuthorᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_AuthorsPayload_authors(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -2344,7 +2308,7 @@ func (ec *executionContext) _Mutation_updateAuthor(ctx context.Context, field gr
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().UpdateAuthor(rctx, fc.Args["input"].(*AuthorUpdateInput))
+		return ec.resolvers.Mutation().UpdateAuthor(rctx, fc.Args["input"].(AuthorUpdateInput))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -2412,7 +2376,7 @@ func (ec *executionContext) _Mutation_deleteAuthor(ctx context.Context, field gr
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().DeleteAuthor(rctx, fc.Args["input"].(*AuthorDeleteInput))
+		return ec.resolvers.Mutation().DeleteAuthor(rctx, fc.Args["input"].(AuthorDeleteInput))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -2548,7 +2512,7 @@ func (ec *executionContext) _Mutation_updatePost(ctx context.Context, field grap
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().UpdatePost(rctx, fc.Args["input"].(*PostUpdateInput))
+		return ec.resolvers.Mutation().UpdatePost(rctx, fc.Args["input"].(PostUpdateInput))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -3227,14 +3191,11 @@ func (ec *executionContext) _PostsPayload_posts(ctx context.Context, field graph
 		return graphql.Null
 	}
 	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
 		return graphql.Null
 	}
 	res := resTmp.([]*Post)
 	fc.Result = res
-	return ec.marshalNPost2ᚕᚖgoᚑtemplateᚋgqlmodelsᚐPostᚄ(ctx, field.Selections, res)
+	return ec.marshalOPost2ᚕᚖgoᚑtemplateᚋgqlmodelsᚐPostᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_PostsPayload_posts(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -7301,42 +7262,6 @@ func (ec *executionContext) unmarshalInputAuthorDeleteInput(ctx context.Context,
 	return it, nil
 }
 
-func (ec *executionContext) unmarshalInputAuthorFilter(ctx context.Context, obj interface{}) (AuthorFilter, error) {
-	var it AuthorFilter
-	asMap := map[string]interface{}{}
-	for k, v := range obj.(map[string]interface{}) {
-		asMap[k] = v
-	}
-
-	fieldsInOrder := [...]string{"search", "where"}
-	for _, k := range fieldsInOrder {
-		v, ok := asMap[k]
-		if !ok {
-			continue
-		}
-		switch k {
-		case "search":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("search"))
-			it.Search, err = ec.unmarshalOString2ᚖstring(ctx, v)
-			if err != nil {
-				return it, err
-			}
-		case "where":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("where"))
-			it.Where, err = ec.unmarshalOAuthorWhere2ᚖgoᚑtemplateᚋgqlmodelsᚐAuthorWhere(ctx, v)
-			if err != nil {
-				return it, err
-			}
-		}
-	}
-
-	return it, nil
-}
-
 func (ec *executionContext) unmarshalInputAuthorUpdateInput(ctx context.Context, obj interface{}) (AuthorUpdateInput, error) {
 	var it AuthorUpdateInput
 	asMap := map[string]interface{}{}
@@ -7372,74 +7297,6 @@ func (ec *executionContext) unmarshalInputAuthorUpdateInput(ctx context.Context,
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("lastName"))
 			it.LastName, err = ec.unmarshalOString2ᚖstring(ctx, v)
-			if err != nil {
-				return it, err
-			}
-		}
-	}
-
-	return it, nil
-}
-
-func (ec *executionContext) unmarshalInputAuthorWhere(ctx context.Context, obj interface{}) (AuthorWhere, error) {
-	var it AuthorWhere
-	asMap := map[string]interface{}{}
-	for k, v := range obj.(map[string]interface{}) {
-		asMap[k] = v
-	}
-
-	fieldsInOrder := [...]string{"id", "firstName", "lastName", "createdAt", "updatedAt", "deletedAt"}
-	for _, k := range fieldsInOrder {
-		v, ok := asMap[k]
-		if !ok {
-			continue
-		}
-		switch k {
-		case "id":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
-			it.ID, err = ec.unmarshalOIDFilter2ᚖgoᚑtemplateᚋgqlmodelsᚐIDFilter(ctx, v)
-			if err != nil {
-				return it, err
-			}
-		case "firstName":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("firstName"))
-			it.FirstName, err = ec.unmarshalOStringFilter2ᚖgoᚑtemplateᚋgqlmodelsᚐStringFilter(ctx, v)
-			if err != nil {
-				return it, err
-			}
-		case "lastName":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("lastName"))
-			it.LastName, err = ec.unmarshalOStringFilter2ᚖgoᚑtemplateᚋgqlmodelsᚐStringFilter(ctx, v)
-			if err != nil {
-				return it, err
-			}
-		case "createdAt":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("createdAt"))
-			it.CreatedAt, err = ec.unmarshalOIntFilter2ᚖgoᚑtemplateᚋgqlmodelsᚐIntFilter(ctx, v)
-			if err != nil {
-				return it, err
-			}
-		case "updatedAt":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("updatedAt"))
-			it.UpdatedAt, err = ec.unmarshalOIntFilter2ᚖgoᚑtemplateᚋgqlmodelsᚐIntFilter(ctx, v)
-			if err != nil {
-				return it, err
-			}
-		case "deletedAt":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("deletedAt"))
-			it.DeletedAt, err = ec.unmarshalOIntFilter2ᚖgoᚑtemplateᚋgqlmodelsᚐIntFilter(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -7813,42 +7670,6 @@ func (ec *executionContext) unmarshalInputPostDeleteInput(ctx context.Context, o
 	return it, nil
 }
 
-func (ec *executionContext) unmarshalInputPostFilter(ctx context.Context, obj interface{}) (PostFilter, error) {
-	var it PostFilter
-	asMap := map[string]interface{}{}
-	for k, v := range obj.(map[string]interface{}) {
-		asMap[k] = v
-	}
-
-	fieldsInOrder := [...]string{"search", "where"}
-	for _, k := range fieldsInOrder {
-		v, ok := asMap[k]
-		if !ok {
-			continue
-		}
-		switch k {
-		case "search":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("search"))
-			it.Search, err = ec.unmarshalOString2ᚖstring(ctx, v)
-			if err != nil {
-				return it, err
-			}
-		case "where":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("where"))
-			it.Where, err = ec.unmarshalOPostWhere2ᚖgoᚑtemplateᚋgqlmodelsᚐPostWhere(ctx, v)
-			if err != nil {
-				return it, err
-			}
-		}
-	}
-
-	return it, nil
-}
-
 func (ec *executionContext) unmarshalInputPostUpdateInput(ctx context.Context, obj interface{}) (PostUpdateInput, error) {
 	var it PostUpdateInput
 	asMap := map[string]interface{}{}
@@ -7876,82 +7697,6 @@ func (ec *executionContext) unmarshalInputPostUpdateInput(ctx context.Context, o
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("content"))
 			it.Content, err = ec.unmarshalNString2string(ctx, v)
-			if err != nil {
-				return it, err
-			}
-		}
-	}
-
-	return it, nil
-}
-
-func (ec *executionContext) unmarshalInputPostWhere(ctx context.Context, obj interface{}) (PostWhere, error) {
-	var it PostWhere
-	asMap := map[string]interface{}{}
-	for k, v := range obj.(map[string]interface{}) {
-		asMap[k] = v
-	}
-
-	fieldsInOrder := [...]string{"id", "authorID", "lastName", "content", "createdAt", "updatedAt", "deletedAt"}
-	for _, k := range fieldsInOrder {
-		v, ok := asMap[k]
-		if !ok {
-			continue
-		}
-		switch k {
-		case "id":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
-			it.ID, err = ec.unmarshalOIDFilter2ᚖgoᚑtemplateᚋgqlmodelsᚐIDFilter(ctx, v)
-			if err != nil {
-				return it, err
-			}
-		case "authorID":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("authorID"))
-			it.AuthorID, err = ec.unmarshalOIDFilter2ᚖgoᚑtemplateᚋgqlmodelsᚐIDFilter(ctx, v)
-			if err != nil {
-				return it, err
-			}
-		case "lastName":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("lastName"))
-			it.LastName, err = ec.unmarshalOStringFilter2ᚖgoᚑtemplateᚋgqlmodelsᚐStringFilter(ctx, v)
-			if err != nil {
-				return it, err
-			}
-		case "content":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("content"))
-			it.Content, err = ec.unmarshalOStringFilter2ᚖgoᚑtemplateᚋgqlmodelsᚐStringFilter(ctx, v)
-			if err != nil {
-				return it, err
-			}
-		case "createdAt":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("createdAt"))
-			it.CreatedAt, err = ec.unmarshalOIntFilter2ᚖgoᚑtemplateᚋgqlmodelsᚐIntFilter(ctx, v)
-			if err != nil {
-				return it, err
-			}
-		case "updatedAt":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("updatedAt"))
-			it.UpdatedAt, err = ec.unmarshalOIntFilter2ᚖgoᚑtemplateᚋgqlmodelsᚐIntFilter(ctx, v)
-			if err != nil {
-				return it, err
-			}
-		case "deletedAt":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("deletedAt"))
-			it.DeletedAt, err = ec.unmarshalOIntFilter2ᚖgoᚑtemplateᚋgqlmodelsᚐIntFilter(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -8853,9 +8598,6 @@ func (ec *executionContext) _AuthorsPayload(ctx context.Context, sel ast.Selecti
 
 			out.Values[i] = ec._AuthorsPayload_authors(ctx, field, obj)
 
-			if out.Values[i] == graphql.Null {
-				invalids++
-			}
 		case "total":
 
 			out.Values[i] = ec._AuthorsPayload_total(ctx, field, obj)
@@ -9109,9 +8851,6 @@ func (ec *executionContext) _PostsPayload(ctx context.Context, sel ast.Selection
 
 			out.Values[i] = ec._PostsPayload_posts(ctx, field, obj)
 
-			if out.Values[i] == graphql.Null {
-				invalids++
-			}
 		case "total":
 
 			out.Values[i] = ec._PostsPayload_total(ctx, field, obj)
@@ -10035,50 +9774,6 @@ func (ec *executionContext) marshalNAuthor2goᚑtemplateᚋgqlmodelsᚐAuthor(ct
 	return ec._Author(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalNAuthor2ᚕᚖgoᚑtemplateᚋgqlmodelsᚐAuthorᚄ(ctx context.Context, sel ast.SelectionSet, v []*Author) graphql.Marshaler {
-	ret := make(graphql.Array, len(v))
-	var wg sync.WaitGroup
-	isLen1 := len(v) == 1
-	if !isLen1 {
-		wg.Add(len(v))
-	}
-	for i := range v {
-		i := i
-		fc := &graphql.FieldContext{
-			Index:  &i,
-			Result: &v[i],
-		}
-		ctx := graphql.WithFieldContext(ctx, fc)
-		f := func(i int) {
-			defer func() {
-				if r := recover(); r != nil {
-					ec.Error(ctx, ec.Recover(ctx, r))
-					ret = nil
-				}
-			}()
-			if !isLen1 {
-				defer wg.Done()
-			}
-			ret[i] = ec.marshalNAuthor2ᚖgoᚑtemplateᚋgqlmodelsᚐAuthor(ctx, sel, v[i])
-		}
-		if isLen1 {
-			f(i)
-		} else {
-			go f(i)
-		}
-
-	}
-	wg.Wait()
-
-	for _, e := range ret {
-		if e == graphql.Null {
-			return graphql.Null
-		}
-	}
-
-	return ret
-}
-
 func (ec *executionContext) marshalNAuthor2ᚖgoᚑtemplateᚋgqlmodelsᚐAuthor(ctx context.Context, sel ast.SelectionSet, v *Author) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
@@ -10091,6 +9786,16 @@ func (ec *executionContext) marshalNAuthor2ᚖgoᚑtemplateᚋgqlmodelsᚐAuthor
 
 func (ec *executionContext) unmarshalNAuthorCreateInput2goᚑtemplateᚋgqlmodelsᚐAuthorCreateInput(ctx context.Context, v interface{}) (AuthorCreateInput, error) {
 	res, err := ec.unmarshalInputAuthorCreateInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) unmarshalNAuthorDeleteInput2goᚑtemplateᚋgqlmodelsᚐAuthorDeleteInput(ctx context.Context, v interface{}) (AuthorDeleteInput, error) {
+	res, err := ec.unmarshalInputAuthorDeleteInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) unmarshalNAuthorUpdateInput2goᚑtemplateᚋgqlmodelsᚐAuthorUpdateInput(ctx context.Context, v interface{}) (AuthorUpdateInput, error) {
+	res, err := ec.unmarshalInputAuthorUpdateInput(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
@@ -10237,50 +9942,6 @@ func (ec *executionContext) marshalNPost2goᚑtemplateᚋgqlmodelsᚐPost(ctx co
 	return ec._Post(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalNPost2ᚕᚖgoᚑtemplateᚋgqlmodelsᚐPostᚄ(ctx context.Context, sel ast.SelectionSet, v []*Post) graphql.Marshaler {
-	ret := make(graphql.Array, len(v))
-	var wg sync.WaitGroup
-	isLen1 := len(v) == 1
-	if !isLen1 {
-		wg.Add(len(v))
-	}
-	for i := range v {
-		i := i
-		fc := &graphql.FieldContext{
-			Index:  &i,
-			Result: &v[i],
-		}
-		ctx := graphql.WithFieldContext(ctx, fc)
-		f := func(i int) {
-			defer func() {
-				if r := recover(); r != nil {
-					ec.Error(ctx, ec.Recover(ctx, r))
-					ret = nil
-				}
-			}()
-			if !isLen1 {
-				defer wg.Done()
-			}
-			ret[i] = ec.marshalNPost2ᚖgoᚑtemplateᚋgqlmodelsᚐPost(ctx, sel, v[i])
-		}
-		if isLen1 {
-			f(i)
-		} else {
-			go f(i)
-		}
-
-	}
-	wg.Wait()
-
-	for _, e := range ret {
-		if e == graphql.Null {
-			return graphql.Null
-		}
-	}
-
-	return ret
-}
-
 func (ec *executionContext) marshalNPost2ᚖgoᚑtemplateᚋgqlmodelsᚐPost(ctx context.Context, sel ast.SelectionSet, v *Post) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
@@ -10298,6 +9959,11 @@ func (ec *executionContext) unmarshalNPostCreateInput2goᚑtemplateᚋgqlmodels�
 
 func (ec *executionContext) unmarshalNPostDeleteInput2goᚑtemplateᚋgqlmodelsᚐPostDeleteInput(ctx context.Context, v interface{}) (PostDeleteInput, error) {
 	res, err := ec.unmarshalInputPostDeleteInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) unmarshalNPostUpdateInput2goᚑtemplateᚋgqlmodelsᚐPostUpdateInput(ctx context.Context, v interface{}) (PostUpdateInput, error) {
+	res, err := ec.unmarshalInputPostUpdateInput(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
@@ -10805,28 +10471,51 @@ func (ec *executionContext) marshalN__TypeKind2string(ctx context.Context, sel a
 	return res
 }
 
-func (ec *executionContext) unmarshalOAuthorDeleteInput2ᚖgoᚑtemplateᚋgqlmodelsᚐAuthorDeleteInput(ctx context.Context, v interface{}) (*AuthorDeleteInput, error) {
+func (ec *executionContext) marshalOAuthor2ᚕᚖgoᚑtemplateᚋgqlmodelsᚐAuthorᚄ(ctx context.Context, sel ast.SelectionSet, v []*Author) graphql.Marshaler {
 	if v == nil {
-		return nil, nil
+		return graphql.Null
 	}
-	res, err := ec.unmarshalInputAuthorDeleteInput(ctx, v)
-	return &res, graphql.ErrorOnPath(ctx, err)
-}
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalNAuthor2ᚖgoᚑtemplateᚋgqlmodelsᚐAuthor(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
 
-func (ec *executionContext) unmarshalOAuthorUpdateInput2ᚖgoᚑtemplateᚋgqlmodelsᚐAuthorUpdateInput(ctx context.Context, v interface{}) (*AuthorUpdateInput, error) {
-	if v == nil {
-		return nil, nil
 	}
-	res, err := ec.unmarshalInputAuthorUpdateInput(ctx, v)
-	return &res, graphql.ErrorOnPath(ctx, err)
-}
+	wg.Wait()
 
-func (ec *executionContext) unmarshalOAuthorWhere2ᚖgoᚑtemplateᚋgqlmodelsᚐAuthorWhere(ctx context.Context, v interface{}) (*AuthorWhere, error) {
-	if v == nil {
-		return nil, nil
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
 	}
-	res, err := ec.unmarshalInputAuthorWhere(ctx, v)
-	return &res, graphql.ErrorOnPath(ctx, err)
+
+	return ret
 }
 
 func (ec *executionContext) unmarshalOBoolean2bool(ctx context.Context, v interface{}) (bool, error) {
@@ -11049,20 +10738,51 @@ func (ec *executionContext) unmarshalOPagination2ᚖgoᚑtemplateᚋgqlmodelsᚐ
 	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) unmarshalOPostUpdateInput2ᚖgoᚑtemplateᚋgqlmodelsᚐPostUpdateInput(ctx context.Context, v interface{}) (*PostUpdateInput, error) {
+func (ec *executionContext) marshalOPost2ᚕᚖgoᚑtemplateᚋgqlmodelsᚐPostᚄ(ctx context.Context, sel ast.SelectionSet, v []*Post) graphql.Marshaler {
 	if v == nil {
-		return nil, nil
+		return graphql.Null
 	}
-	res, err := ec.unmarshalInputPostUpdateInput(ctx, v)
-	return &res, graphql.ErrorOnPath(ctx, err)
-}
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalNPost2ᚖgoᚑtemplateᚋgqlmodelsᚐPost(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
 
-func (ec *executionContext) unmarshalOPostWhere2ᚖgoᚑtemplateᚋgqlmodelsᚐPostWhere(ctx context.Context, v interface{}) (*PostWhere, error) {
-	if v == nil {
-		return nil, nil
 	}
-	res, err := ec.unmarshalInputPostWhere(ctx, v)
-	return &res, graphql.ErrorOnPath(ctx, err)
+	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
 }
 
 func (ec *executionContext) marshalORole2ᚖgoᚑtemplateᚋgqlmodelsᚐRole(ctx context.Context, sel ast.SelectionSet, v *Role) graphql.Marshaler {

@@ -16,11 +16,11 @@ func (r *mutationResolver) CreateAuthor(ctx context.Context, input gqlmodels.Aut
 }
 
 // UpdateAuthor is the resolver for the updateAuthor field.
-func (r *mutationResolver) UpdateAuthor(ctx context.Context, input *gqlmodels.AuthorUpdateInput) (*gqlmodels.Author, error) {
+func (r *mutationResolver) UpdateAuthor(ctx context.Context, input gqlmodels.AuthorUpdateInput) (*gqlmodels.Author, error) {
 	panic(fmt.Errorf("not implemented: UpdateAuthor - updateAuthor"))
 }
 
 // DeleteAuthor is the resolver for the deleteAuthor field.
-func (r *mutationResolver) DeleteAuthor(ctx context.Context, input *gqlmodels.AuthorDeleteInput) (*gqlmodels.Author, error) {
+func (r *mutationResolver) DeleteAuthor(ctx context.Context, input gqlmodels.AuthorDeleteInput) (*gqlmodels.Author, error) {
 	panic(fmt.Errorf("not implemented: DeleteAuthor - deleteAuthor"))
 }

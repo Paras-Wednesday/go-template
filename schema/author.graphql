@@ -1,0 +1,42 @@
+type Author {
+    id: ID!
+    firstName: String!
+    lastName: String!
+    createdAt: Int
+    updatedAt: Int
+    deletedAt: Int
+}
+
+input AuthorFilter {
+    search: String
+    where: AuthorWhere
+}
+
+input AuthorWhere {
+    id: IDFilter
+    firstName: StringFilter
+    lastName: StringFilter
+    createdAt: IntFilter
+    updatedAt: IntFilter
+    deletedAt: IntFilter
+}
+
+input AuthorCreateInput {
+    firstName: String!
+    lastName: String!
+}
+
+input AuthorUpdateInput {
+    id: ID!
+    firstName: String
+    lastName: String
+}
+
+input AuthorDeleteInput {
+    id: ID!
+}
+
+type AuthorsPayload {
+    authors: [Author!]!
+    total: Int!
+}

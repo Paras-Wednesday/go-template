@@ -22,11 +22,6 @@ input UserFilter {
     where: UserWhere
 }
 
-input UserPagination {
-    limit: Int!
-    page: Int!
-}
-
 input UserWhere {
     id: IDFilter
     firstName: StringFilter

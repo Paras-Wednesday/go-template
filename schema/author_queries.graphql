@@ -1,0 +1,4 @@
+extend type Query {
+    author(id: ID!): Author!
+    authors(pagination: Pagination!): AuthorsPayload!
+}

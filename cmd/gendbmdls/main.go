@@ -50,15 +50,17 @@ func main() {
 	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
 	viper.AutomaticEnv()
 
+	if err != nil {
+		fmt.Printf("Couldn't register psql: %s\n", err)
+		return
+	}
+
 	var cfg = drivers.Config{}
 	for _, key := range keys {
 		if key != "blacklist" && key != "whitelist" {
 			prefixedKey := fmt.Sprintf("%s.%s", driverName, key)
 			cfg[key] = viper.Get(prefixedKey)
 		}
-	}
-	if err != nil {
-		return
 	}
 
 	cmdState, err := boilingcore.New(&boilingcore.Config{
@@ -72,14 +74,17 @@ func main() {
 		Imports:         configureImports(),
 	})
 	if err != nil {
+		fmt.Println("error in setting up boilingcore command state")
 		panic(err)
 	}
 	err = cmdState.Run()
 	if err != nil {
+		fmt.Println("error in running the command state")
 		panic(err)
 	}
 	err = cmdState.Cleanup()
 	if err != nil {
+		fmt.Println("error in cleaning up the command state")
 		panic(err)
 	}
 }

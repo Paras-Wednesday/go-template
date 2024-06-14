@@ -49,53 +49,6 @@ var GorpMigrationTableColumns = struct {
 
 // Generated where
 
-type whereHelperstring struct{ field string }
-
-func (w whereHelperstring) EQ(x string) qm.QueryMod  { return qmhelper.Where(w.field, qmhelper.EQ, x) }
-func (w whereHelperstring) NEQ(x string) qm.QueryMod { return qmhelper.Where(w.field, qmhelper.NEQ, x) }
-func (w whereHelperstring) LT(x string) qm.QueryMod  { return qmhelper.Where(w.field, qmhelper.LT, x) }
-func (w whereHelperstring) LTE(x string) qm.QueryMod { return qmhelper.Where(w.field, qmhelper.LTE, x) }
-func (w whereHelperstring) GT(x string) qm.QueryMod  { return qmhelper.Where(w.field, qmhelper.GT, x) }
-func (w whereHelperstring) GTE(x string) qm.QueryMod { return qmhelper.Where(w.field, qmhelper.GTE, x) }
-func (w whereHelperstring) IN(slice []string) qm.QueryMod {
-	values := make([]interface{}, 0, len(slice))
-	for _, value := range slice {
-		values = append(values, value)
-	}
-	return qm.WhereIn(fmt.Sprintf("%s IN ?", w.field), values...)
-}
-func (w whereHelperstring) NIN(slice []string) qm.QueryMod {
-	values := make([]interface{}, 0, len(slice))
-	for _, value := range slice {
-		values = append(values, value)
-	}
-	return qm.WhereNotIn(fmt.Sprintf("%s NOT IN ?", w.field), values...)
-}
-
-type whereHelpernull_Time struct{ field string }
-
-func (w whereHelpernull_Time) EQ(x null.Time) qm.QueryMod {
-	return qmhelper.WhereNullEQ(w.field, false, x)
-}
-func (w whereHelpernull_Time) NEQ(x null.Time) qm.QueryMod {
-	return qmhelper.WhereNullEQ(w.field, true, x)
-}
-func (w whereHelpernull_Time) LT(x null.Time) qm.QueryMod {
-	return qmhelper.Where(w.field, qmhelper.LT, x)
-}
-func (w whereHelpernull_Time) LTE(x null.Time) qm.QueryMod {
-	return qmhelper.Where(w.field, qmhelper.LTE, x)
-}
-func (w whereHelpernull_Time) GT(x null.Time) qm.QueryMod {
-	return qmhelper.Where(w.field, qmhelper.GT, x)
-}
-func (w whereHelpernull_Time) GTE(x null.Time) qm.QueryMod {
-	return qmhelper.Where(w.field, qmhelper.GTE, x)
-}
-
-func (w whereHelpernull_Time) IsNull() qm.QueryMod    { return qmhelper.WhereIsNull(w.field) }
-func (w whereHelpernull_Time) IsNotNull() qm.QueryMod { return qmhelper.WhereIsNotNull(w.field) }
-
 var GorpMigrationWhere = struct {
 	ID        whereHelperstring
 	AppliedAt whereHelpernull_Time
@@ -458,7 +411,7 @@ func (o GorpMigrationSlice) UpdateAll(ctx context.Context, exec boil.ContextExec
 
 // Upsert attempts an insert using an executor, and does an update or ignore on conflict.
 // See boil.Columns documentation for how to properly use updateColumns and insertColumns.
-func (o *GorpMigration) Upsert(ctx context.Context, exec boil.ContextExecutor, updateOnConflict bool, conflictColumns []string, updateColumns, insertColumns boil.Columns) error {
+func (o *GorpMigration) Upsert(ctx context.Context, exec boil.ContextExecutor, updateOnConflict bool, conflictColumns []string, updateColumns, insertColumns boil.Columns, opts ...UpsertOptionFunc) error {
 	if o == nil {
 		return errors.New("models: no gorp_migrations provided for upsert")
 	}
@@ -500,7 +453,7 @@ func (o *GorpMigration) Upsert(ctx context.Context, exec boil.ContextExecutor, u
 	var err error
 
 	if !cached {
-		insert, ret := insertColumns.InsertColumnSet(
+		insert, _ := insertColumns.InsertColumnSet(
 			gorpMigrationAllColumns,
 			gorpMigrationColumnsWithDefault,
 			gorpMigrationColumnsWithoutDefault,
@@ -516,12 +469,18 @@ func (o *GorpMigration) Upsert(ctx context.Context, exec boil.ContextExecutor, u
 			return errors.New("models: unable to upsert gorp_migrations, could not build update column list")
 		}
 
+		ret := strmangle.SetComplement(gorpMigrationAllColumns, strmangle.SetIntersect(insert, update))
+
 		conflict := conflictColumns
-		if len(conflict) == 0 {
+		if len(conflict) == 0 && updateOnConflict && len(update) != 0 {
+			if len(gorpMigrationPrimaryKeyColumns) == 0 {
+				return errors.New("models: unable to upsert gorp_migrations, could not build conflict column list")
+			}
+
 			conflict = make([]string, len(gorpMigrationPrimaryKeyColumns))
 			copy(conflict, gorpMigrationPrimaryKeyColumns)
 		}
-		cache.query = buildUpsertQueryPostgres(dialect, "\"gorp_migrations\"", updateOnConflict, ret, update, conflict, insert)
+		cache.query = buildUpsertQueryPostgres(dialect, "\"gorp_migrations\"", updateOnConflict, ret, update, conflict, insert, opts...)
 
 		cache.valueMapping, err = queries.BindMapping(gorpMigrationType, gorpMigrationMapping, insert)
 		if err != nil {
@@ -549,7 +508,7 @@ func (o *GorpMigration) Upsert(ctx context.Context, exec boil.ContextExecutor, u
 	}
 	if len(cache.retMapping) != 0 {
 		err = exec.QueryRowContext(ctx, cache.query, vals...).Scan(returns...)
-		if err == sql.ErrNoRows {
+		if errors.Is(err, sql.ErrNoRows) {
 			err = nil // Postgres doesn't return anything when there's no update
 		}
 	} else {

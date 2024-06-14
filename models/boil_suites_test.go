@@ -12,68 +12,92 @@ import "testing"
 // It does NOT run each operation group in parallel.
 // Separating the tests thusly grants avoidance of Postgres deadlocks.
 func TestParent(t *testing.T) {
+	t.Run("Authors", testAuthors)
 	t.Run("GorpMigrations", testGorpMigrations)
+	t.Run("Posts", testPosts)
 	t.Run("Roles", testRoles)
 	t.Run("Users", testUsers)
 }
 
 func TestDelete(t *testing.T) {
+	t.Run("Authors", testAuthorsDelete)
 	t.Run("GorpMigrations", testGorpMigrationsDelete)
+	t.Run("Posts", testPostsDelete)
 	t.Run("Roles", testRolesDelete)
 	t.Run("Users", testUsersDelete)
 }
 
 func TestQueryDeleteAll(t *testing.T) {
+	t.Run("Authors", testAuthorsQueryDeleteAll)
 	t.Run("GorpMigrations", testGorpMigrationsQueryDeleteAll)
+	t.Run("Posts", testPostsQueryDeleteAll)
 	t.Run("Roles", testRolesQueryDeleteAll)
 	t.Run("Users", testUsersQueryDeleteAll)
 }
 
 func TestSliceDeleteAll(t *testing.T) {
+	t.Run("Authors", testAuthorsSliceDeleteAll)
 	t.Run("GorpMigrations", testGorpMigrationsSliceDeleteAll)
+	t.Run("Posts", testPostsSliceDeleteAll)
 	t.Run("Roles", testRolesSliceDeleteAll)
 	t.Run("Users", testUsersSliceDeleteAll)
 }
 
 func TestExists(t *testing.T) {
+	t.Run("Authors", testAuthorsExists)
 	t.Run("GorpMigrations", testGorpMigrationsExists)
+	t.Run("Posts", testPostsExists)
 	t.Run("Roles", testRolesExists)
 	t.Run("Users", testUsersExists)
 }
 
 func TestFind(t *testing.T) {
+	t.Run("Authors", testAuthorsFind)
 	t.Run("GorpMigrations", testGorpMigrationsFind)
+	t.Run("Posts", testPostsFind)
 	t.Run("Roles", testRolesFind)
 	t.Run("Users", testUsersFind)
 }
 
 func TestBind(t *testing.T) {
+	t.Run("Authors", testAuthorsBind)
 	t.Run("GorpMigrations", testGorpMigrationsBind)
+	t.Run("Posts", testPostsBind)
 	t.Run("Roles", testRolesBind)
 	t.Run("Users", testUsersBind)
 }
 
 func TestOne(t *testing.T) {
+	t.Run("Authors", testAuthorsOne)
 	t.Run("GorpMigrations", testGorpMigrationsOne)
+	t.Run("Posts", testPostsOne)
 	t.Run("Roles", testRolesOne)
 	t.Run("Users", testUsersOne)
 }
 
 func TestAll(t *testing.T) {
+	t.Run("Authors", testAuthorsAll)
 	t.Run("GorpMigrations", testGorpMigrationsAll)
+	t.Run("Posts", testPostsAll)
 	t.Run("Roles", testRolesAll)
 	t.Run("Users", testUsersAll)
 }
 
 func TestCount(t *testing.T) {
+	t.Run("Authors", testAuthorsCount)
 	t.Run("GorpMigrations", testGorpMigrationsCount)
+	t.Run("Posts", testPostsCount)
 	t.Run("Roles", testRolesCount)
 	t.Run("Users", testUsersCount)
 }
 
 func TestInsert(t *testing.T) {
+	t.Run("Authors", testAuthorsInsert)
+	t.Run("Authors", testAuthorsInsertWhitelist)
 	t.Run("GorpMigrations", testGorpMigrationsInsert)
 	t.Run("GorpMigrations", testGorpMigrationsInsertWhitelist)
+	t.Run("Posts", testPostsInsert)
+	t.Run("Posts", testPostsInsertWhitelist)
 	t.Run("Roles", testRolesInsert)
 	t.Run("Roles", testRolesInsertWhitelist)
 	t.Run("Users", testUsersInsert)
@@ -83,6 +107,7 @@ func TestInsert(t *testing.T) {
 // TestToOne tests cannot be run in parallel
 // or deadlocks can occur.
 func TestToOne(t *testing.T) {
+	t.Run("PostToAuthorUsingAuthor", testPostToOneAuthorUsingAuthor)
 	t.Run("UserToRoleUsingRole", testUserToOneRoleUsingRole)
 }
 
@@ -93,12 +118,14 @@ func TestOneToOne(t *testing.T) {}
 // TestToMany tests cannot be run in parallel
 // or deadlocks can occur.
 func TestToMany(t *testing.T) {
+	t.Run("AuthorToPosts", testAuthorToManyPosts)
 	t.Run("RoleToUsers", testRoleToManyUsers)
 }
 
 // TestToOneSet tests cannot be run in parallel
 // or deadlocks can occur.
 func TestToOneSet(t *testing.T) {
+	t.Run("PostToAuthorUsingPosts", testPostToOneSetOpAuthorUsingAuthor)
 	t.Run("UserToRoleUsingUsers", testUserToOneSetOpRoleUsingRole)
 }
 
@@ -119,6 +146,7 @@ func TestOneToOneRemove(t *testing.T) {}
 // TestToManyAdd tests cannot be run in parallel
 // or deadlocks can occur.
 func TestToManyAdd(t *testing.T) {
+	t.Run("AuthorToPosts", testAuthorToManyAddOpPosts)
 	t.Run("RoleToUsers", testRoleToManyAddOpUsers)
 }
 
@@ -135,31 +163,41 @@ func TestToManyRemove(t *testing.T) {
 }
 
 func TestReload(t *testing.T) {
+	t.Run("Authors", testAuthorsReload)
 	t.Run("GorpMigrations", testGorpMigrationsReload)
+	t.Run("Posts", testPostsReload)
 	t.Run("Roles", testRolesReload)
 	t.Run("Users", testUsersReload)
 }
 
 func TestReloadAll(t *testing.T) {
+	t.Run("Authors", testAuthorsReloadAll)
 	t.Run("GorpMigrations", testGorpMigrationsReloadAll)
+	t.Run("Posts", testPostsReloadAll)
 	t.Run("Roles", testRolesReloadAll)
 	t.Run("Users", testUsersReloadAll)
 }
 
 func TestSelect(t *testing.T) {
+	t.Run("Authors", testAuthorsSelect)
 	t.Run("GorpMigrations", testGorpMigrationsSelect)
+	t.Run("Posts", testPostsSelect)
 	t.Run("Roles", testRolesSelect)
 	t.Run("Users", testUsersSelect)
 }
 
 func TestUpdate(t *testing.T) {
+	t.Run("Authors", testAuthorsUpdate)
 	t.Run("GorpMigrations", testGorpMigrationsUpdate)
+	t.Run("Posts", testPostsUpdate)
 	t.Run("Roles", testRolesUpdate)
 	t.Run("Users", testUsersUpdate)
 }
 
 func TestSliceUpdateAll(t *testing.T) {
+	t.Run("Authors", testAuthorsSliceUpdateAll)
 	t.Run("GorpMigrations", testGorpMigrationsSliceUpdateAll)
+	t.Run("Posts", testPostsSliceUpdateAll)
 	t.Run("Roles", testRolesSliceUpdateAll)
 	t.Run("Users", testUsersSliceUpdateAll)
 }

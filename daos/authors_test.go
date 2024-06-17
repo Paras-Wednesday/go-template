@@ -7,12 +7,12 @@ import (
 	"regexp"
 	"testing"
 
+	"github.com/DATA-DOG/go-sqlmock"
+	"github.com/stretchr/testify/assert"
+
 	"go-template/daos"
 	"go-template/models"
 	"go-template/testutls"
-
-	"github.com/DATA-DOG/go-sqlmock"
-	"github.com/stretchr/testify/assert"
 )
 
 func TestCreateAuthor(t *testing.T) {
@@ -270,5 +270,84 @@ func TestDeleteAuthor(t *testing.T) {
 			assert.Equal(t, test.wantErr, err != nil,
 				"wantErr: %t, got: %v", test.wantErr, err)
 		})
+	}
+}
+
+//nolint:funlen
+func TestGetAllAuthors(t *testing.T) {
+	tests := []struct {
+		name      string
+		wantErr   bool
+		wantCount int
+		init      func(mock sqlmock.Sqlmock)
+	}{
+		{
+			name:      "Should retrieve 2 authors",
+			wantErr:   false,
+			wantCount: 2,
+			init: func(mock sqlmock.Sqlmock) {
+				rows := sqlmock.NewRows([]string{
+					models.AuthorColumns.ID,
+					models.AuthorColumns.FirstName,
+					models.AuthorColumns.LastName,
+				}).AddRow(
+					testutls.MockAuthor().ID,
+					testutls.MockAuthor().FirstName,
+					testutls.MockAuthor().LastName,
+				).AddRow(
+					testutls.MockAuthor().ID,
+					testutls.MockAuthor().FirstName,
+					testutls.MockAuthor().LastName,
+				)
+				mock.ExpectQuery(regexp.QuoteMeta(
+					`SELECT "authors".* FROM "authors";`,
+				)).WithArgs().
+					WillReturnRows(rows)
+			},
+		},
+		{
+			name:      "Should retrieve only 1 author",
+			wantErr:   false,
+			wantCount: 1,
+			init: func(mock sqlmock.Sqlmock) {
+				rows := sqlmock.NewRows([]string{
+					models.AuthorColumns.ID,
+					models.AuthorColumns.FirstName,
+					models.AuthorColumns.LastName,
+				}).AddRow(
+					testutls.MockAuthor().ID,
+					testutls.MockAuthor().FirstName,
+					testutls.MockAuthor().LastName,
+				)
+				mock.ExpectQuery(regexp.QuoteMeta(
+					`SELECT "authors".* FROM "authors";`,
+				)).WithArgs().
+					WillReturnRows(rows)
+			},
+		},
+		{
+			name:      "Should retrieve no authors",
+			wantErr:   true,
+			wantCount: 0,
+			init: func(mock sqlmock.Sqlmock) {
+				sqlmock.NewRows([]string{}).
+					AddRow()
+				mock.ExpectQuery(regexp.QuoteMeta(
+					`SELECT "authors".* FROM "authors";`,
+				)).WithArgs().
+					WillReturnError(fmt.Errorf("error in fetching "))
+			},
+		},
+	}
+
+	mock, cleanup, _ := testutls.SetupMockDB(t)
+	defer cleanup()
+
+	for _, test := range tests {
+		test.init(mock)
+		authors, err := daos.GetAllAuthors(context.Background())
+		assert.Equal(t, test.wantErr, err != nil,
+			"wantErr: %t, got: %v", test.wantErr, err)
+		assert.Equal(t, test.wantCount, len(authors))
 	}
 }

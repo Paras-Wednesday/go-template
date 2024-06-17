@@ -51,3 +51,8 @@ func FindAuthorByLastName(ctx context.Context, lname string) (*models.Author, er
 	return models.Authors(qm.Where(fmt.Sprintf("%s=$1", models.AuthorColumns.LastName), lname)).
 		One(ctx, contextExecutor)
 }
+
+func GetAllAuthors(ctx context.Context, queries ...qm.QueryMod) (models.AuthorSlice, error) {
+	contextExecutor := GetContextExecutor(nil)
+	return models.Authors(queries...).All(ctx, contextExecutor)
+}

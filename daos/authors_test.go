@@ -276,67 +276,32 @@ func TestDeleteAuthor(t *testing.T) {
 //nolint:funlen
 func TestGetAllAuthors(t *testing.T) {
 	tests := []struct {
-		name      string
-		wantErr   bool
-		wantCount int
-		init      func(mock sqlmock.Sqlmock)
+		name    string
+		wantErr bool
+		queries []testutls.QueryData
 	}{
 		{
-			name:      "Should retrieve 2 authors",
-			wantErr:   false,
-			wantCount: 2,
-			init: func(mock sqlmock.Sqlmock) {
-				rows := sqlmock.NewRows([]string{
-					models.AuthorColumns.ID,
-					models.AuthorColumns.FirstName,
-					models.AuthorColumns.LastName,
-				}).AddRow(
-					testutls.MockAuthor().ID,
-					testutls.MockAuthor().FirstName,
-					testutls.MockAuthor().LastName,
-				).AddRow(
-					testutls.MockAuthor().ID,
-					testutls.MockAuthor().FirstName,
-					testutls.MockAuthor().LastName,
-				)
-				mock.ExpectQuery(regexp.QuoteMeta(
-					`SELECT "authors".* FROM "authors";`,
-				)).WithArgs().
-					WillReturnRows(rows)
+			name:    "Should retrieve only 1 author",
+			wantErr: false,
+			queries: []testutls.QueryData{
+				{
+					Query:      `SELECT COUNT(*) FROM "authors";`,
+					DbResponse: sqlmock.NewRows([]string{"count"}).AddRow(testutls.MockCount),
+				},
+				{
+					Query: `SELECT "authors".* FROM "authors";`,
+					DbResponse: sqlmock.NewRows([]string{"id", "first_name", "last_name"}).
+						AddRow(
+							testutls.MockAuthor().ID,
+							testutls.MockAuthor().FirstName,
+							testutls.MockAuthor().LastName,
+						),
+				},
 			},
 		},
 		{
-			name:      "Should retrieve only 1 author",
-			wantErr:   false,
-			wantCount: 1,
-			init: func(mock sqlmock.Sqlmock) {
-				rows := sqlmock.NewRows([]string{
-					models.AuthorColumns.ID,
-					models.AuthorColumns.FirstName,
-					models.AuthorColumns.LastName,
-				}).AddRow(
-					testutls.MockAuthor().ID,
-					testutls.MockAuthor().FirstName,
-					testutls.MockAuthor().LastName,
-				)
-				mock.ExpectQuery(regexp.QuoteMeta(
-					`SELECT "authors".* FROM "authors";`,
-				)).WithArgs().
-					WillReturnRows(rows)
-			},
-		},
-		{
-			name:      "Should retrieve no authors",
-			wantErr:   true,
-			wantCount: 0,
-			init: func(mock sqlmock.Sqlmock) {
-				sqlmock.NewRows([]string{}).
-					AddRow()
-				mock.ExpectQuery(regexp.QuoteMeta(
-					`SELECT "authors".* FROM "authors";`,
-				)).WithArgs().
-					WillReturnError(fmt.Errorf("error in fetching "))
-			},
+			name:    "Should retrieve no authors",
+			wantErr: true,
 		},
 	}
 
@@ -344,10 +309,23 @@ func TestGetAllAuthors(t *testing.T) {
 	defer cleanup()
 
 	for _, test := range tests {
-		test.init(mock)
-		authors, err := daos.GetAllAuthors(context.Background())
-		assert.Equal(t, test.wantErr, err != nil,
-			"wantErr: %t, got: %v", test.wantErr, err)
-		assert.Equal(t, test.wantCount, len(authors))
+		if test.wantErr {
+			mock.ExpectQuery(regexp.QuoteMeta(`SELECT "authors".* FROM "authors";`)).
+				WithArgs().
+				WillReturnError(fmt.Errorf("this is some error"))
+		}
+		for _, dbQuery := range test.queries {
+			mock.ExpectQuery(regexp.QuoteMeta(dbQuery.Query)).
+				WithArgs().
+				WillReturnRows(dbQuery.DbResponse)
+		}
+		t.Run(test.name, func(t *testing.T) {
+			_, count, err := daos.GetAllAuthorsWithCount(context.Background())
+			assert.Equal(t, test.wantErr, err != nil,
+				"wantErr: %t, got: %v", test.wantErr, err)
+			if err == nil {
+				assert.Equal(t, count, testutls.MockCount)
+			}
+		})
 	}
 }

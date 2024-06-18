@@ -2,13 +2,14 @@ package cnvrttogql
 
 import (
 	"context"
+	"strconv"
+
+	"github.com/volatiletech/sqlboiler/v4/boil"
+
 	graphql "go-template/gqlmodels"
 	"go-template/internal/constants"
 	"go-template/models"
 	"go-template/pkg/utl/convert"
-	"strconv"
-
-	"github.com/volatiletech/sqlboiler/v4/boil"
 )
 
 // UsersToGraphQlUsers converts array of type models.User into array of pointer type graphql.User
@@ -69,4 +70,27 @@ func RoleToGraphqlRole(r *models.Role, count int) *graphql.Role {
 		DeletedAt:   convert.NullDotTimeToPointerInt(r.DeletedAt),
 		Users:       UsersToGraphQlUsers(users, count),
 	}
+}
+
+func AuthorToGraphQlAuthor(a models.Author) *graphql.Author {
+	return &graphql.Author{
+		ID:        strconv.Itoa(a.ID),
+		FirstName: a.FirstName,
+		LastName:  a.LastName.String,
+		CreatedAt: convert.NullDotTimeToPointerInt(a.CreatedAt),
+		UpdatedAt: convert.NullDotTimeToPointerInt(a.UpdatedAt),
+		DeletedAt: convert.NullDotTimeToPointerInt(a.DeletedAt),
+	}
+}
+
+func AuthorsToGraphQlAuthorsPayload(authors models.AuthorSlice, total int64) *graphql.AuthorsPayload {
+	result := graphql.AuthorsPayload{
+		Authors: make([]*graphql.Author, 0, len(authors)),
+		Total:   int(total),
+	}
+
+	for i := range authors {
+		result.Authors = append(result.Authors, AuthorToGraphQlAuthor(*authors[i]))
+	}
+	return &result
 }

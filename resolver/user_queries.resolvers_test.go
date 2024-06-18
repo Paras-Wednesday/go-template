@@ -11,6 +11,7 @@ import (
 	"go-template/gqlmodels"
 	fm "go-template/gqlmodels"
 	"go-template/models"
+
 	//	"go-template/pkg/utl/cnvrttogql"
 	"go-template/pkg/utl/rediscache"
 	"go-template/resolver"
@@ -83,7 +84,7 @@ func TestMe(t *testing.T) {
 
 type queryUsersArgs struct {
 	name       string
-	pagination *fm.UserPagination
+	pagination *fm.Pagination
 	wantResp   []*models.User
 	wantErr    bool
 	init       func(sqlmock.Sqlmock)
@@ -104,7 +105,7 @@ func initializeTestCases() []queryUsersArgs {
 		{
 			name:    "Paginated Users are returned when the request is paginated",
 			wantErr: false,
-			pagination: &fm.UserPagination{
+			pagination: &fm.Pagination{
 				Limit: 1,
 				Page:  1,
 			},
@@ -144,7 +145,7 @@ func initializeTestCases() []queryUsersArgs {
 }
 
 func executeQuery(resolver1 *resolver.Resolver,
-	ctx context.Context, pagination *fm.UserPagination) (*gqlmodels.UsersPayload, error) {
+	ctx context.Context, pagination *fm.Pagination) (*gqlmodels.UsersPayload, error) {
 	return resolver1.Query().Users(ctx, pagination)
 }
 

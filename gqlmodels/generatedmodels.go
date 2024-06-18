@@ -2,6 +2,35 @@
 
 package gqlmodels
 
+type Author struct {
+	ID        string `json:"id"`
+	FirstName string `json:"firstName"`
+	LastName  string `json:"lastName"`
+	CreatedAt *int   `json:"createdAt"`
+	UpdatedAt *int   `json:"updatedAt"`
+	DeletedAt *int   `json:"deletedAt"`
+}
+
+type AuthorCreateInput struct {
+	FirstName string `json:"firstName"`
+	LastName  string `json:"lastName"`
+}
+
+type AuthorDeleteInput struct {
+	ID string `json:"id"`
+}
+
+type AuthorUpdateInput struct {
+	ID        string  `json:"id"`
+	FirstName *string `json:"firstName"`
+	LastName  *string `json:"lastName"`
+}
+
+type AuthorsPayload struct {
+	Authors []*Author `json:"authors"`
+	Total   int       `json:"total"`
+}
+
 type BooleanFilter struct {
 	IsTrue  *bool `json:"isTrue"`
 	IsFalse *bool `json:"isFalse"`
@@ -44,6 +73,39 @@ type IntFilter struct {
 type LoginResponse struct {
 	Token        string `json:"token"`
 	RefreshToken string `json:"refreshToken"`
+}
+
+type Pagination struct {
+	Limit int `json:"limit"`
+	Page  int `json:"page"`
+}
+
+type Post struct {
+	ID        string `json:"id"`
+	AuthorID  string `json:"authorID"`
+	Content   string `json:"content"`
+	CreatedAt *int   `json:"createdAt"`
+	UpdatedAt *int   `json:"updatedAt"`
+	DeletedAt *int   `json:"deletedAt"`
+}
+
+type PostCreateInput struct {
+	AuthorID string `json:"authorID"`
+	Content  string `json:"content"`
+}
+
+type PostDeleteInput struct {
+	ID string `json:"id"`
+}
+
+type PostUpdateInput struct {
+	ID      string `json:"id"`
+	Content string `json:"content"`
+}
+
+type PostsPayload struct {
+	Posts []*Post `json:"posts"`
+	Total int     `json:"total"`
 }
 
 type RefreshTokenResponse struct {
@@ -176,11 +238,6 @@ type UserDeletePayload struct {
 type UserFilter struct {
 	Search *string    `json:"search"`
 	Where  *UserWhere `json:"where"`
-}
-
-type UserPagination struct {
-	Limit int `json:"limit"`
-	Page  int `json:"page"`
 }
 
 type UserPayload struct {

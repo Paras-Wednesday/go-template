@@ -171,3 +171,14 @@ func IsInTests() bool {
 	}
 	return false
 }
+
+func MockAuthor() *models.Author {
+	return &models.Author{
+		ID:        MockID,
+		FirstName: "First",
+		LastName:  null.StringFrom("Last"),
+		CreatedAt: null.Time{},
+		UpdatedAt: null.Time{},
+		DeletedAt: null.Time{},
+	}
+}

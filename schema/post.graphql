@@ -1,0 +1,27 @@
+type Post {
+    id: ID!
+    authorID: ID!
+    content: String!
+    createdAt: Int
+    updatedAt: Int
+    deletedAt: Int
+}
+
+input PostCreateInput {
+    authorID: ID!
+    content: String!
+}
+
+input PostUpdateInput{
+    id: ID!
+    content: String!
+}
+
+input PostDeleteInput {
+    id: ID!
+}
+
+type PostsPayload {
+    posts: [Post!]
+    total: Int!
+}

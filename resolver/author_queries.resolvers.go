@@ -28,7 +28,7 @@ func (r *queryResolver) Author(ctx context.Context, id string) (*gqlmodels.Autho
 
 // Authors is the resolver for the authors field.
 func (r *queryResolver) Authors(ctx context.Context, pagination gqlmodels.Pagination) (*gqlmodels.AuthorsPayload, error) {
-	if pagination.Limit < 0 || pagination.Page < 0 {
+	if pagination.Limit < 0 || pagination.Page < 1 {
 		return nil, resultwrapper.ResolverWrapperFromMessage(http.StatusBadRequest, "pagination or limit can not be negative")
 	}
 	offset := qm.Offset(pagination.Limit * (pagination.Page - 1))

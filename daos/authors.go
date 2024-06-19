@@ -52,7 +52,13 @@ func FindAuthorByLastName(ctx context.Context, lname string) (*models.Author, er
 		One(ctx, contextExecutor)
 }
 
-func GetAllAuthors(ctx context.Context, queries ...qm.QueryMod) (models.AuthorSlice, error) {
+func GetAllAuthorsWithCount(ctx context.Context, queries ...qm.QueryMod) (models.AuthorSlice, int64, error) {
 	contextExecutor := GetContextExecutor(nil)
-	return models.Authors(queries...).All(ctx, contextExecutor)
+
+	count, err := models.Authors().Count(ctx, contextExecutor)
+	if err != nil {
+		return models.AuthorSlice{}, 0, err
+	}
+	authors, err := models.Authors(queries...).All(ctx, contextExecutor)
+	return authors, count, err
 }

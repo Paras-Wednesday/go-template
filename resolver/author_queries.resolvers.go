@@ -6,18 +6,38 @@ package resolver
 
 import (
 	"context"
-	"fmt"
+	"net/http"
+
+	"go-template/daos"
 	"go-template/gqlmodels"
+	"go-template/pkg/utl/cnvrttogql"
+	"go-template/pkg/utl/convert"
+	"go-template/pkg/utl/resultwrapper"
+
+	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 )
 
 // Author is the resolver for the author field.
 func (r *queryResolver) Author(ctx context.Context, id string) (*gqlmodels.Author, error) {
-	panic(fmt.Errorf("not implemented: Author - author"))
+	author, err := daos.FindAuthorByID(ctx, convert.StringToInt(id))
+	if err != nil {
+		return nil, resultwrapper.ResolverSQLError(err, "user fetch")
+	}
+	return cnvrttogql.AuthorToGraphQlAuthor(*author), nil
 }
 
 // Authors is the resolver for the authors field.
 func (r *queryResolver) Authors(ctx context.Context, pagination gqlmodels.Pagination) (*gqlmodels.AuthorsPayload, error) {
-	panic(fmt.Errorf("not implemented: Authors - authors"))
+	if pagination.Limit < 0 || pagination.Page < 0 {
+		return nil, resultwrapper.ResolverWrapperFromMessage(http.StatusBadRequest, "pagination or limit can not be negative")
+	}
+	offset := qm.Offset(pagination.Limit * (pagination.Page - 1))
+	queryMod := qm.Limit(pagination.Limit)
+	authors, count, err := daos.GetAllAuthorsWithCount(ctx, offset, queryMod)
+	if err != nil {
+		return nil, resultwrapper.ResolverSQLError(err, "get all authors")
+	}
+	return cnvrttogql.AuthorsToGraphQlAuthorsPayload(authors, count), nil
 }
 
 // Query returns gqlmodels.QueryResolver implementation.

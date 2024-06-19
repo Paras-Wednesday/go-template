@@ -5,9 +5,11 @@ import (
 	"go-template/models"
 	"reflect"
 	"testing"
+	"time"
 
 	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/stretchr/testify/assert"
+	"github.com/volatiletech/null/v8"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 )
 
@@ -108,6 +110,80 @@ func TestUserToGraphQlUser(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			got := UserToGraphQlUser(tt.req, 0)
 			assert.Equal(t, got, tt.want)
+		})
+	}
+}
+
+func TestAuthorToGraphqlAuthor(t *testing.T) {
+	now := time.Now()
+	nowMilli := int(now.UnixMilli())
+	tests := []struct {
+		name     string
+		input    models.Author
+		expected *graphql.Author
+	}{
+		{
+			name: SuccessCase,
+			input: models.Author{
+				ID:        29,
+				FirstName: "First",
+				LastName:  null.String{},
+				CreatedAt: null.TimeFrom(now),
+			},
+			expected: &graphql.Author{
+				ID:        "29",
+				FirstName: "First",
+				LastName:  "",
+				CreatedAt: &nowMilli,
+			},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			assert.Equal(t, test.expected, AuthorToGraphQlAuthor(test.input))
+		})
+	}
+}
+
+func TestAuthorsToGraphqlAuthorsPayload(t *testing.T) {
+	now := time.Now()
+	nowMilli := int(now.UnixMilli())
+	tests := []struct {
+		name       string
+		inputSlice models.AuthorSlice
+		inputTotal int64
+		expected   *graphql.AuthorsPayload
+	}{
+		{
+			name: SuccessCase,
+			inputSlice: []*models.Author{
+				{
+					ID:        29,
+					FirstName: "First",
+					LastName:  null.String{},
+					CreatedAt: null.TimeFrom(now),
+				},
+			},
+			inputTotal: 2,
+			expected: &graphql.AuthorsPayload{
+				Authors: []*graphql.Author{
+					{
+						ID:        "29",
+						FirstName: "First",
+						LastName:  "",
+						CreatedAt: &nowMilli,
+					},
+				},
+				Total: 2,
+			},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			got := AuthorsToGraphQlAuthorsPayload(test.inputSlice, test.inputTotal)
+			assert.Equal(t, test.expected, got)
 		})
 	}
 }

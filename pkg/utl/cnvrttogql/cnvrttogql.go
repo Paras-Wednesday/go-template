@@ -70,3 +70,29 @@ func RoleToGraphqlRole(r *models.Role, count int) *graphql.Role {
 		Users:       UsersToGraphQlUsers(users, count),
 	}
 }
+
+func PostToGraphqlPost(post *models.Post) *graphql.Post {
+	if post == nil {
+		return nil
+	}
+
+	return &graphql.Post{
+		ID:        strconv.Itoa(post.ID),
+		AuthorID:  strconv.Itoa(post.AuthorID),
+		Content:   post.Content,
+		CreatedAt: convert.NullDotTimeToPointerInt(post.CreatedAt),
+		UpdatedAt: convert.NullDotTimeToPointerInt(post.UpdatedAt),
+		DeletedAt: convert.NullDotTimeToPointerInt(post.DeletedAt),
+	}
+}
+
+func PostsToGraphqlPostsPayload(postSlice models.PostSlice, count int64) *graphql.PostsPayload {
+	result := graphql.PostsPayload{
+		Posts: make([]*graphql.Post, 0, len(postSlice)),
+		Total: int(count),
+	}
+	for i := range postSlice {
+		result.Posts = append(result.Posts, PostToGraphqlPost(postSlice[i]))
+	}
+	return &result
+}

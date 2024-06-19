@@ -6,16 +6,41 @@ package resolver
 
 import (
 	"context"
-	"fmt"
+	"go-template/daos"
 	"go-template/gqlmodels"
+	"go-template/pkg/utl/cnvrttogql"
+	"go-template/pkg/utl/convert"
+	"go-template/pkg/utl/resultwrapper"
+	"net/http"
+
+	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 )
 
 // PostByID is the resolver for the postByID field.
 func (r *queryResolver) PostByID(ctx context.Context, id string) (*gqlmodels.Post, error) {
-	panic(fmt.Errorf("not implemented: PostByID - postByID"))
+	post, err := daos.FindPostByID(ctx, convert.StringToInt(id))
+	if err != nil {
+		return nil, resultwrapper.ResolverSQLError(err, "post fetch")
+	}
+	return cnvrttogql.PostToGraphqlPost(post), nil
 }
 
 // AllPostByAuthor is the resolver for the allPostByAuthor field.
-func (r *queryResolver) AllPostByAuthor(ctx context.Context, authorID string) (*gqlmodels.PostsPayload, error) {
-	panic(fmt.Errorf("not implemented: AllPostByAuthor - allPostByAuthor"))
+func (r *queryResolver) AllPostByAuthor(ctx context.Context, authorID string, pagination gqlmodels.Pagination) (*gqlmodels.PostsPayload, error) {
+	if pagination.Limit < 0 || pagination.Page < 1 {
+		return nil, resultwrapper.ResolverWrapperFromMessage(
+			http.StatusBadRequest, "pagination or limit can not be negative")
+	}
+
+	posts, count, err := daos.FindAllPostBylAuthorWithCount(
+		ctx,
+		convert.StringToInt(authorID),
+		qm.Limit(pagination.Limit),
+		qm.Offset(pagination.Limit*(pagination.Page-1)),
+	)
+
+	if err != nil {
+		return nil, resultwrapper.ResolverSQLError(err, "fetch author's post with pagination")
+	}
+	return cnvrttogql.PostsToGraphqlPostsPayload(posts, count), nil
 }

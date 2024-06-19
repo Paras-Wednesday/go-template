@@ -98,7 +98,7 @@ type ComplexityRoot struct {
 	}
 
 	Query struct {
-		AllPostByAuthor func(childComplexity int, authorID string) int
+		AllPostByAuthor func(childComplexity int, authorID string, pagination Pagination) int
 		Author          func(childComplexity int, id string) int
 		Authors         func(childComplexity int, pagination Pagination) int
 		Me              func(childComplexity int) int
@@ -196,7 +196,7 @@ type QueryResolver interface {
 	Author(ctx context.Context, id string) (*Author, error)
 	Authors(ctx context.Context, pagination Pagination) (*AuthorsPayload, error)
 	PostByID(ctx context.Context, id string) (*Post, error)
-	AllPostByAuthor(ctx context.Context, authorID string) (*PostsPayload, error)
+	AllPostByAuthor(ctx context.Context, authorID string, pagination Pagination) (*PostsPayload, error)
 	Me(ctx context.Context) (*User, error)
 	Users(ctx context.Context, pagination *Pagination) (*UsersPayload, error)
 }
@@ -513,7 +513,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Query.AllPostByAuthor(childComplexity, args["authorID"].(string)), true
+		return e.complexity.Query.AllPostByAuthor(childComplexity, args["authorID"].(string), args["pagination"].(Pagination)), true
 
 	case "Query.author":
 		if e.complexity.Query.Author == nil {
@@ -1050,7 +1050,7 @@ type PostsPayload {
 }`, BuiltIn: false},
 	{Name: "../schema/post_queries.graphql", Input: `extend type Query{
     postByID(id: ID!): Post!
-    allPostByAuthor(authorID: ID!): PostsPayload!
+    allPostByAuthor(authorID: ID!, pagination: Pagination!): PostsPayload!
 }`, BuiltIn: false},
 	{Name: "../schema/role.graphql", Input: `type Role {
     id: ID!
@@ -1463,6 +1463,15 @@ func (ec *executionContext) field_Query_allPostByAuthor_args(ctx context.Context
 		}
 	}
 	args["authorID"] = arg0
+	var arg1 Pagination
+	if tmp, ok := rawArgs["pagination"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("pagination"))
+		arg1, err = ec.unmarshalNPagination2goᚑtemplateᚋgqlmodelsᚐPagination(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["pagination"] = arg1
 	return args, nil
 }
 
@@ -3479,7 +3488,7 @@ func (ec *executionContext) _Query_allPostByAuthor(ctx context.Context, field gr
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().AllPostByAuthor(rctx, fc.Args["authorID"].(string))
+		return ec.resolvers.Query().AllPostByAuthor(rctx, fc.Args["authorID"].(string), fc.Args["pagination"].(Pagination))
 	})
 	if err != nil {
 		ec.Error(ctx, err)

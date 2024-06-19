@@ -5,9 +5,11 @@ import (
 	"go-template/models"
 	"reflect"
 	"testing"
+	"time"
 
 	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/stretchr/testify/assert"
+	"github.com/volatiletech/null/v8"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 )
 
@@ -108,6 +110,100 @@ func TestUserToGraphQlUser(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			got := UserToGraphQlUser(tt.req, 0)
 			assert.Equal(t, got, tt.want)
+		})
+	}
+}
+
+func TestPostToGraphqlPost(t *testing.T) {
+	now := time.Now()
+	nowMilli := int(now.UnixMilli())
+	tests := []struct {
+		name     string
+		input    *models.Post
+		expected *graphql.Post
+	}{
+		{
+			name:     "nil post should return nil",
+			input:    nil,
+			expected: nil,
+		},
+		{
+			name: SuccessCase,
+			input: &models.Post{
+				ID:        1,
+				AuthorID:  2,
+				Content:   "HI this is post",
+				CreatedAt: null.TimeFrom(now),
+			},
+			expected: &graphql.Post{
+				ID:        "1",
+				AuthorID:  "2",
+				Content:   "HI this is post",
+				CreatedAt: &nowMilli,
+			},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			assert.Equal(t, test.expected, PostToGraphqlPost(test.input))
+		})
+	}
+}
+
+func TestPostsToGraphqlPostsPayload(t *testing.T) {
+	tests := []struct {
+		name       string
+		inputPosts models.PostSlice
+		inputCount int64
+		expected   *graphql.PostsPayload
+	}{
+		{
+			name:       "Should return empty posts",
+			inputPosts: []*models.Post{},
+			inputCount: 5,
+			expected: &graphql.PostsPayload{
+				Posts: []*graphql.Post{},
+				Total: 5,
+			},
+		},
+		{
+			name: "Should return two posts",
+			inputPosts: []*models.Post{
+				{
+					ID:       1,
+					AuthorID: 3,
+					Content:  "first post",
+				},
+				{
+					ID:       2,
+					AuthorID: 3,
+					Content:  "second post",
+				},
+			},
+			inputCount: 2,
+			expected: &graphql.PostsPayload{
+				Posts: []*graphql.Post{
+					{
+						ID:       "1",
+						AuthorID: "3",
+						Content:  "first post",
+					},
+					{
+						ID:       "2",
+						AuthorID: "3",
+						Content:  "second post",
+					},
+				},
+				Total: 2,
+			},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			got := PostsToGraphqlPostsPayload(test.inputPosts, test.inputCount)
+			assert.Equal(t, test.expected, got)
 		})
 	}
 }

@@ -14,7 +14,6 @@ import (
 	"go-template/gqlmodels"
 	"go-template/internal/config"
 	"go-template/internal/middleware/auth"
-	"go-template/internal/service"
 	"go-template/pkg/utl/convert"
 	"go-template/pkg/utl/resultwrapper"
 )
@@ -25,19 +24,7 @@ func (r *mutationResolver) Login(ctx context.Context, username string, password 
 	if err != nil {
 		return nil, err
 	}
-	// loading configurations
-	cfg, err := loadConfig()
-	if err != nil {
-		return nil, err
-	}
-	// creating new secure and token generation service
-	sec := service.Secure(cfg)
-	tg, err := service.JWT(cfg)
-	if err != nil {
-		return nil, fmt.Errorf("error in creating auth service")
-	}
-
-	if !u.Password.Valid || (!sec.HashMatchesPassword(u.Password.String, password)) {
+	if !u.Password.Valid || (!r.Sec.HashMatchesPassword(u.Password.String, password)) {
 		return nil, fmt.Errorf("username or password does not exist ")
 	}
 
@@ -45,12 +32,12 @@ func (r *mutationResolver) Login(ctx context.Context, username string, password 
 		return nil, resultwrapper.ErrUnauthorized
 	}
 
-	token, err := tg.GenerateToken(u)
+	token, err := r.JWTService.GenerateToken(u)
 	if err != nil {
 		return nil, resultwrapper.ErrUnauthorized
 	}
 
-	refreshToken := sec.Token(token)
+	refreshToken := r.Sec.Token(token)
 	u.Token = null.StringFrom(refreshToken)
 	_, err = daos.UpdateUser(*u, ctx)
 	if err != nil {
@@ -89,26 +76,19 @@ func (r *mutationResolver) ChangePassword(ctx context.Context, oldPassword strin
 		return nil, resultwrapper.ResolverSQLError(err, "data")
 	}
 
-	// loading configurations
-	cfg, err := loadConfig()
-	if err != nil {
-		return nil, err
-	}
-	// creating new secure service
-	sec := service.Secure(cfg)
-	if !sec.HashMatchesPassword(convert.NullDotStringToString(u.Password), oldPassword) {
+	if !r.Sec.HashMatchesPassword(convert.NullDotStringToString(u.Password), oldPassword) {
 		return nil, fmt.Errorf("incorrect old password")
 	}
 
-	if !sec.Password(newPassword,
+	if !r.Sec.Password(newPassword,
 		convert.NullDotStringToString(u.FirstName),
 		convert.NullDotStringToString(u.LastName),
 		convert.NullDotStringToString(u.Username),
 		convert.NullDotStringToString(u.Email)) {
-		return nil, fmt.Errorf("insecure password")
+		return nil, fmt.Errorf("inr.Secure password")
 	}
 
-	u.Password = null.StringFrom(sec.Hash(newPassword))
+	u.Password = null.StringFrom(r.Sec.Hash(newPassword))
 	_, err = daos.UpdateUser(*u, ctx)
 	if err != nil {
 		return nil, resultwrapper.ResolverSQLError(err, "new information")
@@ -122,17 +102,7 @@ func (r *mutationResolver) RefreshToken(ctx context.Context, token string) (*gql
 	if err != nil {
 		return nil, resultwrapper.ResolverSQLError(err, "token")
 	}
-	// loading configurations
-	cfg, err := loadConfig()
-	if err != nil {
-		return nil, err
-	}
-	// creating new secure and token generation service
-	tg, err := service.JWT(cfg)
-	if err != nil {
-		return nil, fmt.Errorf("error in creating auth service ")
-	}
-	resp, err := tg.GenerateToken(user)
+	resp, err := r.JWTService.GenerateToken(user)
 	if err != nil {
 		return nil, err
 	}

@@ -6,13 +6,12 @@ package resolver
 
 import (
 	"context"
-	"net/http"
-
 	"go-template/daos"
 	"go-template/gqlmodels"
 	"go-template/pkg/utl/cnvrttogql"
 	"go-template/pkg/utl/convert"
 	"go-template/pkg/utl/resultwrapper"
+	"net/http"
 
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 )

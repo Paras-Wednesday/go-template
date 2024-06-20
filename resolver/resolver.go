@@ -4,6 +4,8 @@ import (
 	"sync"
 
 	fm "go-template/gqlmodels"
+	"go-template/internal/jwt"
+	"go-template/pkg/utl/secure"
 )
 
 // This file will
@@ -21,5 +23,7 @@ import (
 // Resolver ...
 type Resolver struct {
 	sync.Mutex
-	Observers map[string]chan *fm.User
+	Observers  map[string]chan *fm.User
+	Sec        secure.Service
+	JWTService jwt.Service
 }

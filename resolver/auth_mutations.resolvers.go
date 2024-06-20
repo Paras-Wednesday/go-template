@@ -7,6 +7,9 @@ package resolver
 import (
 	"context"
 	"fmt"
+
+	null "github.com/volatiletech/null/v8"
+
 	"go-template/daos"
 	"go-template/gqlmodels"
 	"go-template/internal/config"
@@ -14,8 +17,6 @@ import (
 	"go-template/internal/service"
 	"go-template/pkg/utl/convert"
 	"go-template/pkg/utl/resultwrapper"
-
-	null "github.com/volatiletech/null/v8"
 )
 
 // Login is the resolver for the login field.
@@ -55,6 +56,27 @@ func (r *mutationResolver) Login(ctx context.Context, username string, password 
 	if err != nil {
 		return nil, err
 	}
+
+	return &gqlmodels.LoginResponse{Token: token, RefreshToken: refreshToken}, nil
+}
+
+// AuthorLogin is the resolver for the authorLogin field.
+func (r *mutationResolver) AuthorLogin(ctx context.Context, email string, password string) (*gqlmodels.LoginResponse, error) {
+	author, err := daos.FindAuthorByEmail(ctx, email)
+	if err != nil {
+		return nil, fmt.Errorf("username or password does not exist ")
+	}
+
+	if !r.Sec.HashMatchesPassword(author.Password, password) {
+		return nil, fmt.Errorf("username or password does not exist ")
+	}
+
+	token, err := r.JWTService.GenerateTokenForAuthor(author)
+	if err != nil {
+		return nil, resultwrapper.ErrUnauthorized
+	}
+
+	refreshToken := r.Sec.Token(token)
 
 	return &gqlmodels.LoginResponse{Token: token, RefreshToken: refreshToken}, nil
 }

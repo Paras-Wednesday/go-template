@@ -47,9 +47,11 @@ type ComplexityRoot struct {
 	Author struct {
 		CreatedAt func(childComplexity int) int
 		DeletedAt func(childComplexity int) int
+		Email     func(childComplexity int) int
 		FirstName func(childComplexity int) int
 		ID        func(childComplexity int) int
 		LastName  func(childComplexity int) int
+		Password  func(childComplexity int) int
 		UpdatedAt func(childComplexity int) int
 	}
 
@@ -68,6 +70,7 @@ type ComplexityRoot struct {
 	}
 
 	Mutation struct {
+		AuthorLogin    func(childComplexity int, email string, password string) int
 		ChangePassword func(childComplexity int, oldPassword string, newPassword string) int
 		CreateAuthor   func(childComplexity int, input AuthorCreateInput) int
 		CreatePost     func(childComplexity int, input PostCreateInput) int
@@ -179,6 +182,7 @@ type ComplexityRoot struct {
 
 type MutationResolver interface {
 	Login(ctx context.Context, username string, password string) (*LoginResponse, error)
+	AuthorLogin(ctx context.Context, email string, password string) (*LoginResponse, error)
 	ChangePassword(ctx context.Context, oldPassword string, newPassword string) (*ChangePasswordResponse, error)
 	RefreshToken(ctx context.Context, token string) (*RefreshTokenResponse, error)
 	CreateAuthor(ctx context.Context, input AuthorCreateInput) (*Author, error)
@@ -233,6 +237,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Author.DeletedAt(childComplexity), true
 
+	case "Author.email":
+		if e.complexity.Author.Email == nil {
+			break
+		}
+
+		return e.complexity.Author.Email(childComplexity), true
+
 	case "Author.firstName":
 		if e.complexity.Author.FirstName == nil {
 			break
@@ -253,6 +264,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Author.LastName(childComplexity), true
+
+	case "Author.password":
+		if e.complexity.Author.Password == nil {
+			break
+		}
+
+		return e.complexity.Author.Password(childComplexity), true
 
 	case "Author.updatedAt":
 		if e.complexity.Author.UpdatedAt == nil {
@@ -295,6 +313,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.LoginResponse.Token(childComplexity), true
+
+	case "Mutation.authorLogin":
+		if e.complexity.Mutation.AuthorLogin == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_authorLogin_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.AuthorLogin(childComplexity, args["email"].(string), args["password"].(string)), true
 
 	case "Mutation.changePassword":
 		if e.complexity.Mutation.ChangePassword == nil {
@@ -918,19 +948,26 @@ func (ec *executionContext) introspectType(name string) (*introspection.Type, er
 var sources = []*ast.Source{
 	{Name: "../schema/auth_mutations.graphql", Input: `extend type Mutation {
     login(username: String!, password: String!): LoginResponse!
+    authorLogin(email: String!, password: String!):
+    LoginResponse!
     changePassword(oldPassword: String!, newPassword: String!): ChangePasswordResponse!
     refreshToken(token: String!): RefreshTokenResponse!
-}`, BuiltIn: false},
+}
+`, BuiltIn: false},
 	{Name: "../schema/author.graphql", Input: `type Author {
     id: ID!
     firstName: String!
     lastName: String!
+    email: String!
+    password: String
     createdAt: Int
     updatedAt: Int
     deletedAt: Int
 }
 
 input AuthorCreateInput {
+    email: String!
+    password: String!
     firstName: String!
     lastName: String!
 }
@@ -948,7 +985,8 @@ input AuthorDeleteInput {
 type AuthorsPayload {
     authors: [Author!]
     total: Int!
-}`, BuiltIn: false},
+}
+`, BuiltIn: false},
 	{Name: "../schema/author_mutations.graphql", Input: `extend type Mutation {
     createAuthor(input: AuthorCreateInput!): Author!
     updateAuthor(input: AuthorUpdateInput!): Author!
@@ -1217,7 +1255,8 @@ type ChangePasswordResponse {
 
 type RefreshTokenResponse {
     token: String!
-}`, BuiltIn: false},
+}
+`, BuiltIn: false},
 	{Name: "../schema/user_mutations.graphql", Input: `extend type Mutation {
     createUser(input: UserCreateInput!): User!
     updateUser(input: UserUpdateInput): User!
@@ -1237,6 +1276,30 @@ var parsedSchema = gqlparser.MustLoadSchema(sources...)
 // endregion ************************** generated!.gotpl **************************
 
 // region    ***************************** args.gotpl *****************************
+
+func (ec *executionContext) field_Mutation_authorLogin_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 string
+	if tmp, ok := rawArgs["email"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("email"))
+		arg0, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["email"] = arg0
+	var arg1 string
+	if tmp, ok := rawArgs["password"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("password"))
+		arg1, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["password"] = arg1
+	return args, nil
+}
 
 func (ec *executionContext) field_Mutation_changePassword_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
@@ -1705,6 +1768,91 @@ func (ec *executionContext) fieldContext_Author_lastName(ctx context.Context, fi
 	return fc, nil
 }
 
+func (ec *executionContext) _Author_email(ctx context.Context, field graphql.CollectedField, obj *Author) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Author_email(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Email, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Author_email(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Author",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Author_password(ctx context.Context, field graphql.CollectedField, obj *Author) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Author_password(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Password, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Author_password(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Author",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Author_createdAt(ctx context.Context, field graphql.CollectedField, obj *Author) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Author_createdAt(ctx, field)
 	if err != nil {
@@ -1870,6 +2018,10 @@ func (ec *executionContext) fieldContext_AuthorsPayload_authors(ctx context.Cont
 				return ec.fieldContext_Author_firstName(ctx, field)
 			case "lastName":
 				return ec.fieldContext_Author_lastName(ctx, field)
+			case "email":
+				return ec.fieldContext_Author_email(ctx, field)
+			case "password":
+				return ec.fieldContext_Author_password(ctx, field)
 			case "createdAt":
 				return ec.fieldContext_Author_createdAt(ctx, field)
 			case "updatedAt":
@@ -2119,6 +2271,66 @@ func (ec *executionContext) fieldContext_Mutation_login(ctx context.Context, fie
 	return fc, nil
 }
 
+func (ec *executionContext) _Mutation_authorLogin(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_authorLogin(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().AuthorLogin(rctx, fc.Args["email"].(string), fc.Args["password"].(string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*LoginResponse)
+	fc.Result = res
+	return ec.marshalNLoginResponse2ᚖgoᚑtemplateᚋgqlmodelsᚐLoginResponse(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_authorLogin(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "token":
+				return ec.fieldContext_LoginResponse_token(ctx, field)
+			case "refreshToken":
+				return ec.fieldContext_LoginResponse_refreshToken(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type LoginResponse", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_authorLogin_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Mutation_changePassword(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Mutation_changePassword(ctx, field)
 	if err != nil {
@@ -2279,6 +2491,10 @@ func (ec *executionContext) fieldContext_Mutation_createAuthor(ctx context.Conte
 				return ec.fieldContext_Author_firstName(ctx, field)
 			case "lastName":
 				return ec.fieldContext_Author_lastName(ctx, field)
+			case "email":
+				return ec.fieldContext_Author_email(ctx, field)
+			case "password":
+				return ec.fieldContext_Author_password(ctx, field)
 			case "createdAt":
 				return ec.fieldContext_Author_createdAt(ctx, field)
 			case "updatedAt":
@@ -2347,6 +2563,10 @@ func (ec *executionContext) fieldContext_Mutation_updateAuthor(ctx context.Conte
 				return ec.fieldContext_Author_firstName(ctx, field)
 			case "lastName":
 				return ec.fieldContext_Author_lastName(ctx, field)
+			case "email":
+				return ec.fieldContext_Author_email(ctx, field)
+			case "password":
+				return ec.fieldContext_Author_password(ctx, field)
 			case "createdAt":
 				return ec.fieldContext_Author_createdAt(ctx, field)
 			case "updatedAt":
@@ -2415,6 +2635,10 @@ func (ec *executionContext) fieldContext_Mutation_deleteAuthor(ctx context.Conte
 				return ec.fieldContext_Author_firstName(ctx, field)
 			case "lastName":
 				return ec.fieldContext_Author_lastName(ctx, field)
+			case "email":
+				return ec.fieldContext_Author_email(ctx, field)
+			case "password":
+				return ec.fieldContext_Author_password(ctx, field)
 			case "createdAt":
 				return ec.fieldContext_Author_createdAt(ctx, field)
 			case "updatedAt":
@@ -3322,6 +3546,10 @@ func (ec *executionContext) fieldContext_Query_author(ctx context.Context, field
 				return ec.fieldContext_Author_firstName(ctx, field)
 			case "lastName":
 				return ec.fieldContext_Author_lastName(ctx, field)
+			case "email":
+				return ec.fieldContext_Author_email(ctx, field)
+			case "password":
+				return ec.fieldContext_Author_password(ctx, field)
 			case "createdAt":
 				return ec.fieldContext_Author_createdAt(ctx, field)
 			case "updatedAt":
@@ -7214,13 +7442,29 @@ func (ec *executionContext) unmarshalInputAuthorCreateInput(ctx context.Context,
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"firstName", "lastName"}
+	fieldsInOrder := [...]string{"email", "password", "firstName", "lastName"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
 			continue
 		}
 		switch k {
+		case "email":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("email"))
+			it.Email, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "password":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("password"))
+			it.Password, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
 		case "firstName":
 			var err error
 
@@ -8570,6 +8814,17 @@ func (ec *executionContext) _Author(ctx context.Context, sel ast.SelectionSet, o
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
+		case "email":
+
+			out.Values[i] = ec._Author_email(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "password":
+
+			out.Values[i] = ec._Author_password(ctx, field, obj)
+
 		case "createdAt":
 
 			out.Values[i] = ec._Author_createdAt(ctx, field, obj)
@@ -8710,6 +8965,12 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Mutation_login(ctx, field)
+			})
+
+		case "authorLogin":
+
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_authorLogin(ctx, field)
 			})
 
 		case "changePassword":

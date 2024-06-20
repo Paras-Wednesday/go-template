@@ -77,6 +77,7 @@ func AuthorToGraphQlAuthor(a models.Author) *graphql.Author {
 		ID:        strconv.Itoa(a.ID),
 		FirstName: a.FirstName,
 		LastName:  a.LastName.String,
+		Email:     a.Email,
 		CreatedAt: convert.NullDotTimeToPointerInt(a.CreatedAt),
 		UpdatedAt: convert.NullDotTimeToPointerInt(a.UpdatedAt),
 		DeletedAt: convert.NullDotTimeToPointerInt(a.DeletedAt),

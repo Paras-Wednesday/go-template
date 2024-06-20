@@ -7,7 +7,7 @@ package resolver
 import (
 	"context"
 
-	"github.com/volatiletech/null/v8"
+	null "github.com/volatiletech/null/v8"
 
 	"go-template/daos"
 	"go-template/gqlmodels"
@@ -19,10 +19,14 @@ import (
 
 // CreateAuthor is the resolver for the createAuthor field.
 func (r *mutationResolver) CreateAuthor(ctx context.Context, input gqlmodels.AuthorCreateInput) (*gqlmodels.Author, error) {
+	hashedPassword := r.Sec.Hash(input.Password)
 	newAuthor, err := daos.CreateAuthor(ctx, models.Author{
+		Email:     input.Email,
+		Password:  hashedPassword,
 		FirstName: input.FirstName,
 		LastName:  null.StringFrom(input.LastName),
 	})
+
 	if err != nil {
 		return nil, resultwrapper.ResolverSQLError(err, "author insertion")
 	}

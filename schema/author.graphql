@@ -2,12 +2,16 @@ type Author {
     id: ID!
     firstName: String!
     lastName: String!
+    email: String!
+    password: String
     createdAt: Int
     updatedAt: Int
     deletedAt: Int
 }
 
 input AuthorCreateInput {
+    email: String!
+    password: String!
     firstName: String!
     lastName: String!
 }
@@ -26,3 +30,4 @@ type AuthorsPayload {
     authors: [Author!]
     total: Int!
 }
+

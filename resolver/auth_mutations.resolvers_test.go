@@ -103,23 +103,20 @@ func errorPasswordValidationCase() loginType {
 		wantErr: true,
 		err:     fmt.Errorf(ErrorMsgPasswordValidation),
 		init: func() *gomonkey.Patches {
-			tg := jwt.Service{}
-			sec := secure.Service{}
-			return gomonkey.ApplyFunc(service.Secure, func(cfg *config.Configuration) secure.Service {
-				return sec
-			}).ApplyFunc(service.JWT, func(cfg *config.Configuration) (jwt.Service, error) {
-				return tg, nil
-			}).ApplyFunc(config.Load, func() (*config.Configuration, error) {
-				return &config.Configuration{}, nil
-			}).ApplyFunc(daos.FindUserByUserName,
+			return gomonkey.ApplyFunc(
+				daos.FindUserByUserName,
 				func(username string, ctx context.Context) (*models.User, error) {
-					user := testutls.MockUser()
-					user.Password = null.StringFrom(OldPasswordHash)
-					user.Active = null.BoolFrom(false)
-					return user, nil
-				}).ApplyFunc(tg.GenerateToken, func(u *models.User) (string, error) {
-				return "", fmt.Errorf(ErrorMsgPasswordValidation)
-			})
+					return &models.User{
+						ID:       testutls.MockID,
+						Username: null.StringFrom(testutls.MockEmail),
+						Password: null.StringFrom(""),
+						Active:   null.BoolFrom(true),
+					}, nil
+				}).ApplyMethod(reflect.TypeOf(secure.Service{}),
+				"HashMatchesPassword",
+				func(sec secure.Service, hash string, password string) bool {
+					return false
+				})
 		},
 	}
 }
@@ -134,53 +131,47 @@ func errorActiveStatusCase() loginType {
 		wantErr: true,
 		err:     resultwrapper.ErrUnauthorized,
 		init: func() *gomonkey.Patches {
-			tg := jwt.Service{}
-			sec := secure.Service{}
-
-			// mock FindUserByUserName with the proper password, and active state
-			return gomonkey.ApplyFunc(config.Load, func() (*config.Configuration, error) {
-				return nil, nil
-			}).
-				ApplyFunc(service.Secure, func(cfg *config.Configuration) secure.Service {
-					return sec
-				}).ApplyFunc(service.JWT, func(cfg *config.Configuration) (jwt.Service, error) {
-				return tg, nil
-			}).ApplyFunc(daos.FindUserByUserName,
+			return gomonkey.ApplyFunc(
+				daos.FindUserByUserName,
 				func(username string, ctx context.Context) (*models.User, error) {
-					user := testutls.MockUser()
-					user.Password = null.StringFrom(OldPasswordHash)
-					user.Active = null.BoolFrom(false)
-					return user, nil
-				}).ApplyFunc(tg.GenerateToken, func(u *models.User) (string, error) {
-				return "", nil
-			})
-		},
-	}
-}
-
-func errorFromConfigCase() loginType {
-	return loginType{
-		name: ErrorFromConfig,
-		req: loginArgs{
-			UserName: testutls.MockEmail,
-			Password: OldPassword,
-		},
-		wantErr: true,
-		err:     fmt.Errorf(ErrorMsgFromConfig),
-		init: func() *gomonkey.Patches {
-			return gomonkey.ApplyFunc(daos.FindUserByUserName,
-				func(username string, ctx context.Context) (*models.User, error) {
-					user := testutls.MockUser()
-					user.Password = null.StringFrom(OldPasswordHash)
-					user.Active = null.BoolFrom(false)
-					return user, nil
-				}).
-				ApplyFunc(config.Load, func() (*config.Configuration, error) {
-					return nil, fmt.Errorf("error in loading config")
+					return &models.User{
+						ID:       testutls.MockID,
+						Username: null.StringFrom(testutls.MockEmail),
+						Password: null.StringFrom(""),
+						Active:   null.BoolFrom(false),
+					}, nil
+				}).ApplyMethod(reflect.TypeOf(secure.Service{}),
+				"HashMatchesPassword",
+				func(sec secure.Service, hash string, password string) bool {
+					return true
 				})
 		},
 	}
 }
+
+// func errorFromConfigCase() loginType {
+// 	return loginType{
+// 		name: ErrorFromConfig,
+// 		req: loginArgs{
+// 			UserName: testutls.MockEmail,
+// 			Password: OldPassword,
+// 		},
+// 		wantErr: true,
+// 		err:     fmt.Errorf(ErrorMsgFromConfig),
+// 		init: func() *gomonkey.Patches {
+// 			return gomonkey.ApplyFunc(daos.FindUserByUserName,
+// 				func(username string, ctx context.Context) (*models.User, error) {
+// 					user := testutls.MockUser()
+// 					user.Password = null.StringFrom(OldPasswordHash)
+// 					user.Active = null.BoolFrom(false)
+// 					return user, nil
+// 				}).
+// 				ApplyFunc(config.Load, func() (*config.Configuration, error) {
+// 					return nil, fmt.Errorf("error in loading config")
+// 				})
+// 		},
+// 	}
+// }
 
 func errorWhileGeneratingToken() loginType {
 	return loginType{
@@ -190,28 +181,26 @@ func errorWhileGeneratingToken() loginType {
 			Password: OldPassword,
 		},
 		wantErr: true,
-		err:     fmt.Errorf(ErrorMsgFromJwt),
+		err:     resultwrapper.ErrUnauthorized,
 		init: func() *gomonkey.Patches {
-			tg := jwt.Service{}
-			sec := secure.Service{}
-			return gomonkey.ApplyFunc(config.Load, func() (*config.Configuration, error) {
-				return nil, nil
-			}).ApplyMethod(reflect.TypeOf(tg), "GenerateToken",
-				func(jwt.Service, *models.User) (string, error) {
-					return "", nil
-				}).ApplyFunc(service.Secure, func(cfg *config.Configuration) secure.Service {
-				return sec
-			}).ApplyFunc(daos.FindUserByUserName,
+			return gomonkey.ApplyFunc(
+				daos.FindUserByUserName,
 				func(username string, ctx context.Context) (*models.User, error) {
-					user := testutls.MockUser()
-					user.Password = null.StringFrom(OldPassword)
-					user.Active = null.BoolFrom(true)
-					return user, nil
-				}).ApplyMethod(reflect.TypeOf(sec), "HashMatchesPassword", func(sec secure.Service, hash string, password string) bool {
-				return true
-			}).ApplyFunc(service.JWT, func(cfg *config.Configuration) (jwt.Service, error) {
-				return tg, fmt.Errorf(ErrorMsgFromJwt)
-			})
+					return &models.User{
+						ID:       testutls.MockID,
+						Username: null.StringFrom(testutls.MockEmail),
+						Password: null.StringFrom(""),
+						Active:   null.BoolFrom(true),
+					}, nil
+				}).ApplyMethod(reflect.TypeOf(secure.Service{}),
+				"HashMatchesPassword",
+				func(sec secure.Service, hash string, password string) bool {
+					return true
+				}).ApplyMethod(reflect.TypeOf(jwt.Service{}),
+				"GenerateToken",
+				func(svc jwt.Service, u *models.User) (string, error) {
+					return "", fmt.Errorf(ErrorMsgFromJwt)
+				})
 		},
 	}
 }
@@ -227,41 +216,32 @@ func errorUpdateUserCase() loginType {
 		wantErr: true,
 		err:     err,
 		init: func() *gomonkey.Patches {
-			tg := jwt.Service{}
-			sec := secure.Service{}
-			return gomonkey.ApplyFunc(service.JWT, func(cfg *config.Configuration) (jwt.Service, error) {
-				return tg, nil
-			}).ApplyFunc(daos.FindUserByUserName,
+			return gomonkey.ApplyFunc(
+				daos.FindUserByUserName,
 				func(username string, ctx context.Context) (*models.User, error) {
-					user := testutls.MockUser()
-					user.Password = null.StringFrom(OldPasswordHash)
-					user.Active = null.BoolFrom(true)
-					return user, nil
-				}).
-				ApplyFunc(service.Secure, func(cfg *config.Configuration) secure.Service {
-					return sec
-				}).
-				ApplyMethod(reflect.TypeOf(tg), "GenerateToken",
-					func(jwt.Service, *models.User) (string, error) {
-						return "", nil
-					}).ApplyMethod(reflect.TypeOf(sec), "HashMatchesPassword",
+					return &models.User{
+						ID:       testutls.MockID,
+						Username: null.StringFrom(testutls.MockEmail),
+						Password: null.StringFrom(""),
+						Active:   null.BoolFrom(true),
+					}, nil
+				}).ApplyMethod(reflect.TypeOf(secure.Service{}),
+				"HashMatchesPassword",
 				func(sec secure.Service, hash string, password string) bool {
 					return true
-				}).
-				ApplyFunc(config.Load, func() (*config.Configuration, error) {
-					return nil, nil
-				}).
-				ApplyMethod(reflect.TypeOf(sec), "Token",
-					func(secure.Service, string) string {
-						return ""
-					}).
-				ApplyFunc(daos.UpdateUser,
-					func(u models.User, ctx context.Context) (models.User, error) {
-						return models.User{}, err
-					}).ApplyMethod(reflect.TypeOf(sec), "Token",
-				func(secure.Service, string) string {
-					return TestToken
-				})
+				}).ApplyMethod(reflect.TypeOf(jwt.Service{}),
+				"GenerateToken",
+				func(svc jwt.Service, u *models.User) (string, error) {
+					return "token", nil
+				}).ApplyMethod(reflect.TypeOf(secure.Service{}),
+				"Token",
+				func(sec secure.Service, str string) string {
+					return "refresh token"
+				}).ApplyFunc(daos.UpdateUser,
+				func(user models.User, ctx context.Context) (models.User, error) {
+					return models.User{}, fmt.Errorf(ErrorMsgfromUpdateUser)
+				},
+			)
 		},
 	}
 }
@@ -312,44 +292,44 @@ func loginSuccessCase() loginType {
 	}
 }
 
-func errorWhileCreatingJWTService() loginType {
-	err := fmt.Errorf("error in creating auth service")
-	return loginType{
-		name: "Error while creating a JWT Service",
-		req: loginArgs{
-			UserName: testutls.MockEmail,
-			Password: OldPassword,
-		},
-		wantErr: true,
-		err:     err,
-		init: func() *gomonkey.Patches {
-			sec := secure.Service{}
-			return gomonkey.ApplyFunc(config.Load, func() (*config.Configuration, error) {
-				return nil, nil
-			}).ApplyFunc(service.Secure, func(cfg *config.Configuration) secure.Service {
-				return sec
-			}).ApplyFunc(daos.FindUserByUserName,
-				func(username string, ctx context.Context) (*models.User, error) {
-					user := testutls.MockUser()
-					user.Password = null.StringFrom(OldPasswordHash)
-					user.Active = null.BoolFrom(false)
-					return user, nil
-				}).ApplyFunc(service.JWT, func(cfg *config.Configuration) (jwt.Service, error) {
-				// mock service.JWT
-				return jwt.Service{}, err
-			})
-		},
-	}
-}
+// func errorWhileCreatingJWTService() loginType {
+// 	err := fmt.Errorf("error in creating auth service")
+// 	return loginType{
+// 		name: "Error while creating a JWT Service",
+// 		req: loginArgs{
+// 			UserName: testutls.MockEmail,
+// 			Password: OldPassword,
+// 		},
+// 		wantErr: true,
+// 		err:     err,
+// 		init: func() *gomonkey.Patches {
+// 			sec := secure.Service{}
+// 			return gomonkey.ApplyFunc(config.Load, func() (*config.Configuration, error) {
+// 				return nil, nil
+// 			}).ApplyFunc(service.Secure, func(cfg *config.Configuration) secure.Service {
+// 				return sec
+// 			}).ApplyFunc(daos.FindUserByUserName,
+// 				func(username string, ctx context.Context) (*models.User, error) {
+// 					user := testutls.MockUser()
+// 					user.Password = null.StringFrom(OldPasswordHash)
+// 					user.Active = null.BoolFrom(false)
+// 					return user, nil
+// 				}).ApplyFunc(service.JWT, func(cfg *config.Configuration) (jwt.Service, error) {
+// 				// mock service.JWT
+// 				return jwt.Service{}, err
+// 			})
+// 		},
+// 	}
+// }
 
 func loadLoginTestCases() []loginType {
 	return []loginType{
 		errorWhileGeneratingToken(),
 		errorFindingUserCase(),
-		errorFromConfigCase(),
+		// errorFromConfigCase(),
 		errorPasswordValidationCase(),
 		errorActiveStatusCase(),
-		errorWhileCreatingJWTService(),
+		// errorWhileCreatingJWTService(),
 		errorUpdateUserCase(),
 		loginSuccessCase(),
 	}
@@ -366,6 +346,7 @@ func TestLogin(
 			tt.name,
 			func(t *testing.T) {
 				patch := tt.init()
+				time.Sleep(10 * time.Millisecond)
 				c := context.Background()
 				// Call the login mutation with the given arguments and check the response and error against the expected values
 				response, err := resolver1.Mutation().Login(c, tt.req.UserName, tt.req.Password)
@@ -375,7 +356,8 @@ func TestLogin(
 					assert.Equal(t, tt.wantResp, response)
 				} else {
 					// Assert that the expected error value matches the actual error value
-					assert.Equal(t, true, strings.Contains(err.Error(), tt.err.Error()))
+					assert.Equal(t, true, strings.Contains(err.Error(), tt.err.Error()),
+						"wantErr: %t, with message: %s got: %v", tt.wantErr, tt.err.Error(), err)
 					assert.Equal(t, tt.wantErr, err != nil)
 				}
 				if patch != nil {

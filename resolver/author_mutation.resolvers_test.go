@@ -34,6 +34,7 @@ func TestCreateAuthor(t *testing.T) {
 				ID:        fmt.Sprintf("%d", testutls.MockID),
 				FirstName: "First",
 				LastName:  "Last",
+				Email:     testutls.MockEmail,
 			},
 			wantErr: false,
 			init: func() *gomonkey.Patches {
@@ -98,6 +99,7 @@ func TestUpdateAuthor(t *testing.T) {
 				ID:        "1",
 				FirstName: testutls.MockAuthor().FirstName,
 				LastName:  testutls.MockAuthor().LastName.String,
+				Email:     testutls.MockEmail,
 			},
 			wantErr: false,
 			init: func() *gomonkey.Patches {

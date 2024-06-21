@@ -12,7 +12,6 @@ import (
 
 	"go-template/daos"
 	"go-template/gqlmodels"
-	"go-template/internal/config"
 	"go-template/internal/middleware/auth"
 	"go-template/pkg/utl/convert"
 	"go-template/pkg/utl/resultwrapper"
@@ -51,7 +50,7 @@ func (r *mutationResolver) Login(ctx context.Context, username string, password 
 func (r *mutationResolver) AuthorLogin(ctx context.Context, email string, password string) (*gqlmodels.LoginResponse, error) {
 	author, err := daos.FindAuthorByEmail(ctx, email)
 	if err != nil {
-		return nil, fmt.Errorf("username or password does not exist ")
+		return nil, fmt.Errorf("username or password does not exist haha")
 	}
 
 	if !r.Sec.HashMatchesPassword(author.Password, password) {
@@ -120,10 +119,10 @@ type mutationResolver struct{ *Resolver }
 //   - When renaming or deleting a resolver the old code will be put in here. You can safely delete
 //     it when you're done.
 //   - You have helper methods in this file. Move them out to keep these resolver files clean.
-func loadConfig() (*config.Configuration, error) {
-	cfg, err := config.Load()
-	if err != nil {
-		return nil, fmt.Errorf("error in loading config")
-	}
-	return cfg, nil
-}
+// func loadConfig() (*config.Configuration, error) {
+// 	cfg, err := config.Load()
+// 	if err != nil {
+// 		return nil, fmt.Errorf("error in loading config")
+// 	}
+// 	return cfg, nil
+// }

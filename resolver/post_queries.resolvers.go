@@ -6,19 +6,22 @@ package resolver
 
 import (
 	"context"
-	"go-template/daos"
-	"go-template/gqlmodels"
-	"go-template/pkg/utl/cnvrttogql"
-	"go-template/pkg/utl/convert"
-	"go-template/pkg/utl/resultwrapper"
 	"net/http"
 
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
+
+	"go-template/daos"
+	"go-template/gqlmodels"
+	"go-template/internal/middleware/auth"
+	"go-template/pkg/utl/cnvrttogql"
+	"go-template/pkg/utl/convert"
+	"go-template/pkg/utl/resultwrapper"
 )
 
 // PostByID is the resolver for the postByID field.
 func (r *queryResolver) PostByID(ctx context.Context, id string) (*gqlmodels.Post, error) {
-	post, err := daos.FindPostByID(ctx, convert.StringToInt(id))
+	authorID := auth.AuthorIDFromContext(ctx)
+	post, err := daos.FindPostForAuthorByID(ctx, authorID, convert.StringToInt(id))
 	if err != nil {
 		return nil, resultwrapper.ResolverSQLError(err, "post fetch")
 	}
@@ -38,7 +41,6 @@ func (r *queryResolver) AllPostByAuthor(ctx context.Context, authorID string, pa
 		qm.Limit(pagination.Limit),
 		qm.Offset(pagination.Limit*(pagination.Page-1)),
 	)
-
 	if err != nil {
 		return nil, resultwrapper.ResolverSQLError(err, "fetch author's post with pagination")
 	}

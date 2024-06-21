@@ -6,8 +6,10 @@ package resolver
 
 import (
 	"context"
+
 	"go-template/daos"
 	"go-template/gqlmodels"
+	"go-template/internal/middleware/auth"
 	"go-template/models"
 	"go-template/pkg/utl/cnvrttogql"
 	"go-template/pkg/utl/convert"
@@ -30,9 +32,10 @@ func (r *mutationResolver) CreatePost(ctx context.Context, input gqlmodels.PostC
 
 // UpdatePost is the resolver for the updatePost field.
 func (r *mutationResolver) UpdatePost(ctx context.Context, input gqlmodels.PostUpdateInput) (*gqlmodels.Post, error) {
-	post, err := daos.FindPostByID(ctx, convert.StringToInt(input.ID))
+	authorID := auth.AuthorIDFromContext(ctx)
+	post, err := daos.FindPostForAuthorByID(ctx, authorID, convert.StringToInt(input.ID))
 	if err != nil {
-		return nil, resultwrapper.ResolverSQLError(err, "post create")
+		return nil, resultwrapper.ResolverSQLError(err, "post fetch")
 	}
 	// update the content
 	post.Content = input.Content
@@ -46,7 +49,8 @@ func (r *mutationResolver) UpdatePost(ctx context.Context, input gqlmodels.PostU
 
 // DeletePost is the resolver for the deletePost field.
 func (r *mutationResolver) DeletePost(ctx context.Context, input gqlmodels.PostDeleteInput) (*gqlmodels.Post, error) {
-	post, err := daos.FindPostByID(ctx, convert.StringToInt(input.ID))
+	authorID := auth.AuthorIDFromContext(ctx)
+	post, err := daos.FindPostForAuthorByID(ctx, authorID, convert.StringToInt(input.ID))
 	if err != nil {
 		return nil, resultwrapper.ResolverSQLError(err, "post fetch")
 	}

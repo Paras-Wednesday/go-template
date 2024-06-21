@@ -42,9 +42,11 @@ func DeletePost(ctx context.Context, post models.Post) (int64, error) {
 	return DeletePostTx(ctx, post, nil)
 }
 
-func FindPostByID(ctx context.Context, id int) (*models.Post, error) {
+func FindPostForAuthorByID(ctx context.Context, authorID int, postID int) (*models.Post, error) {
 	contextExecutor := GetContextExecutor(nil)
-	return models.FindPost(ctx, contextExecutor, id)
+	return models.Posts(
+		models.PostWhere.AuthorID.EQ(authorID), models.PostWhere.ID.EQ(postID)).
+		One(ctx, contextExecutor)
 }
 
 func FindAllPostBylAuthorWithCount(ctx context.Context, authorID int, queries ...qm.QueryMod) (models.PostSlice, int64, error) {

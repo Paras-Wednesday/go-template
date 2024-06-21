@@ -31,7 +31,10 @@ type CustomContext struct {
 	ctx context.Context
 }
 
-var UserCtxKey = &ContextKey{"user"}
+var (
+	UserCtxKey   = &ContextKey{"user"}
+	AuthorCtxKey = &ContextKey{"author"}
+)
 
 type ContextKey struct {
 	Name string
@@ -50,6 +53,14 @@ func UserIDFromContext(ctx context.Context) int {
 		return user.ID
 	}
 	return 0
+}
+
+func AuthorIDFromContext(ctx context.Context) int {
+	author, ok := ctx.Value(AuthorCtxKey).(*models.Author)
+	if !ok || author == nil {
+		return 0
+	}
+	return author.ID
 }
 
 // GqlMiddleware ...
@@ -109,11 +120,10 @@ func GraphQLMiddleware(
 	tokenParser TokenParser,
 	next graphql2.OperationHandler,
 ) graphql2.ResponseHandler {
-	operation := graphql2.GetOperationContext(ctx).Operation
-	needsAuthAccess, needsSuperAdminAccess := getAccessNeeds(operation)
-	if !needsAuthAccess && !needsSuperAdminAccess {
+	if !needsAuthOrSuperAdminAccess(ctx) {
 		return next(ctx)
 	}
+
 	// strip token
 	tokenStr := ctx.Value(authorization).(string)
 	if len(tokenStr) == 0 {
@@ -124,16 +134,76 @@ func GraphQLMiddleware(
 		return resultwrapper.HandleGraphQLError("Invalid authorization token")
 	}
 	claims := token.Claims.(jwt.MapClaims)
-	if needsSuperAdminAccess && claims["role"].(string) != "SUPER_ADMIN" {
+
+	if resp := verifySuperAdminRole(ctx, claims); resp != nil {
+		return resp
+	}
+
+	email := claims["e"].(string)
+	entityType := claims["type"].(string)
+	if !isValidEntityType(entityType) {
+		return resultwrapper.HandleGraphQLError("Invalid authorization token")
+	}
+	if entityType == "user" {
+		ctx, resp := ctxWithUser(ctx, email)
+		if resp != nil {
+			return resp
+		}
+		return next(ctx)
+	}
+	ctx, resp := ctxWithAuthor(ctx, email)
+	if resp != nil {
+		return resp
+	}
+	return next(ctx)
+}
+
+// needsAuthOrSuperAdminAccess helper to check if auth or any super admin access
+// is needed to perform the given operation
+func needsAuthOrSuperAdminAccess(ctx context.Context) bool {
+	operation := graphql2.GetOperationContext(ctx).Operation
+	needsAuthAccess, needsSuperAdminAccess := getAccessNeeds(operation)
+	return needsAuthAccess || needsSuperAdminAccess
+}
+
+func verifySuperAdminRole(ctx context.Context, claims jwt.MapClaims) graphql2.ResponseHandler {
+	operation := graphql2.GetOperationContext(ctx).Operation
+	_, needsSuperAdminAccess := getAccessNeeds(operation)
+	role, ok := claims["role"].(string)
+	if !ok {
 		return resultwrapper.HandleGraphQLError(
 			"Unauthorized! \n Only admins are authorized to make this request.",
 		)
 	}
-	email := claims["e"].(string)
+	if needsSuperAdminAccess && role != "SUPER_ADMIN" {
+		return resultwrapper.HandleGraphQLError(
+			"Unauthorized! \n Only admins are authorized to make this request.",
+		)
+	}
+	return nil
+}
+
+// isValidEntityType will check if given entityType is author or user
+func isValidEntityType(entityType string) bool {
+	return entityType == "author" || entityType == "user"
+}
+
+// ctxWithUser the helper function to GQlMiddleware to set context with user
+func ctxWithUser(ctx context.Context, email string) (context.Context, graphql2.ResponseHandler) {
 	user, err := daos.FindUserByEmail(email, ctx)
 	if err != nil {
-		return resultwrapper.HandleGraphQLError("No user found for this email address")
+		return nil, resultwrapper.HandleGraphQLError("no user found with this email")
 	}
 	ctx = context.WithValue(ctx, UserCtxKey, user)
-	return next(ctx)
+	return ctx, nil
+}
+
+// ctxWithAuthor the helper function to GQlMiddleware to set context with author
+func ctxWithAuthor(ctx context.Context, email string) (context.Context, graphql2.ResponseHandler) {
+	author, err := daos.FindAuthorByEmail(ctx, email)
+	if err != nil {
+		return nil, resultwrapper.HandleGraphQLError("no author found with this email")
+	}
+	ctx = context.WithValue(ctx, AuthorCtxKey, author)
+	return ctx, nil
 }

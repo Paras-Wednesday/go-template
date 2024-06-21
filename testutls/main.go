@@ -180,5 +180,7 @@ func MockAuthor() *models.Author {
 		CreatedAt: null.Time{},
 		UpdatedAt: null.Time{},
 		DeletedAt: null.Time{},
+		Email:     MockEmail,
+		Password:  "!@#!@12ASa3123",
 	}
 }

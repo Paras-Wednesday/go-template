@@ -69,6 +69,7 @@ func (s Service) GenerateToken(u *models.User) (string, error) {
 		"e":    u.Email,
 		"exp":  time.Now().Add(s.ttl).Unix(),
 		"role": role.Name,
+		"type": "user",
 	}).SignedString(s.key)
 }
 
@@ -77,8 +78,9 @@ func (s Service) GenerateTokenForAuthor(a *models.Author) (string, error) {
 		return "", fmt.Errorf("no author to generate token for")
 	}
 	return jwt.NewWithClaims(s.algo, jwt.MapClaims{
-		"id":  a.ID,
-		"e":   a.Email,
-		"exp": time.Now().Add(s.ttl).Unix(),
+		"id":   a.ID,
+		"e":    a.Email,
+		"exp":  time.Now().Add(s.ttl).Unix(),
+		"type": "author",
 	}).SignedString(s.key)
 }

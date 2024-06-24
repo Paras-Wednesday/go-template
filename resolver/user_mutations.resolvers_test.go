@@ -4,6 +4,12 @@ import (
 	"context"
 	"database/sql/driver"
 	"fmt"
+	"testing"
+	"time"
+
+	"github.com/agiledragon/gomonkey/v2"
+	"github.com/stretchr/testify/assert"
+
 	"go-template/daos"
 	fm "go-template/gqlmodels"
 	"go-template/internal/config"
@@ -15,11 +21,6 @@ import (
 	"go-template/pkg/utl/throttle"
 	"go-template/resolver"
 	"go-template/testutls"
-	"testing"
-	"time"
-
-	"github.com/agiledragon/gomonkey/v2"
-	"github.com/stretchr/testify/assert"
 )
 
 type AnyTime struct{}
@@ -79,6 +80,7 @@ func errorFromThrottleCheck() createUserType {
 		},
 	}
 }
+
 func errorFromCreateUserConfigCase() createUserType {
 	return createUserType{
 		name:    ErrorFromConfig,
@@ -144,6 +146,7 @@ func createUserSuccessCase() createUserType {
 		},
 	}
 }
+
 func getCreateUserTestCase() []createUserType {
 	cases := []createUserType{
 		errorFromCreateUserCase(),
@@ -153,6 +156,7 @@ func getCreateUserTestCase() []createUserType {
 	}
 	return cases
 }
+
 func TestCreateUser(t *testing.T) {
 	cases := getCreateUserTestCase()
 	resolver := resolver.Resolver{}
@@ -192,6 +196,7 @@ func updateUserErrorFindingUser() updateUserType {
 		},
 	}
 }
+
 func updateUserErrorUpdateUser() updateUserType {
 	return updateUserType{
 		name: ErrorUpdateUser,
@@ -214,6 +219,7 @@ func updateUserErrorUpdateUser() updateUserType {
 		},
 	}
 }
+
 func updateUserSuccessCase() updateUserType {
 	return updateUserType{
 		name: SuccessCase,
@@ -256,6 +262,7 @@ func updateUserSuccessCase() updateUserType {
 		},
 	}
 }
+
 func loadUpdateUserTestCases() []updateUserType {
 	return []updateUserType{
 		updateUserErrorFindingUser(),
@@ -274,14 +281,15 @@ func TestUpdateUser(
 			tt.name,
 			func(t *testing.T) {
 				patches := tt.init()
+				time.Sleep(10 * time.Millisecond)
 				c := context.Background()
 				ctx := context.WithValue(c, testutls.UserKey, testutls.MockUser())
 				response, err := resolver1.Mutation().UpdateUser(ctx, tt.req)
+
+				assert.Equal(t, tt.wantErr, err != nil)
 				if tt.wantResp != nil &&
 					response != nil {
 					assert.Equal(t, tt.wantResp, response)
-				} else {
-					assert.Equal(t, tt.wantErr, err != nil)
 				}
 				if patches != nil {
 					patches.Reset()
@@ -367,6 +375,7 @@ func TestDeleteUser(
 			tt.name,
 			func(t *testing.T) {
 				patch := tt.init()
+				time.Sleep(10 * time.Millisecond)
 				// get user by id
 				c := context.Background()
 				ctx := context.WithValue(c, testutls.UserKey, testutls.MockUser())

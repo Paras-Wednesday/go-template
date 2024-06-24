@@ -4,24 +4,20 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"go-template/pkg/utl/cnvrttogql"
 	"regexp"
 	"testing"
-
-	"go-template/gqlmodels"
-	fm "go-template/gqlmodels"
-	"go-template/models"
-
-	//	"go-template/pkg/utl/cnvrttogql"
-	"go-template/pkg/utl/rediscache"
-	"go-template/resolver"
-	"go-template/testutls"
+	"time"
 
 	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/agiledragon/gomonkey/v2"
-	. "github.com/agiledragon/gomonkey/v2"
-
 	"github.com/stretchr/testify/assert"
+
+	fm "go-template/gqlmodels"
+	"go-template/models"
+	"go-template/pkg/utl/cnvrttogql"
+	"go-template/pkg/utl/rediscache"
+	"go-template/resolver"
+	"go-template/testutls"
 )
 
 type args struct {
@@ -33,7 +29,7 @@ type queryMeTestArgs struct {
 	wantResp *fm.User
 	wantErr  bool
 	args     args
-	init     func(args) *Patches
+	init     func(args) *gomonkey.Patches
 }
 
 func initializeCases() []queryMeTestArgs {
@@ -42,7 +38,7 @@ func initializeCases() []queryMeTestArgs {
 			name:     SuccessCase,
 			args:     args{user: testutls.MockUser()},
 			wantResp: cnvrttogql.UserToGraphQlUser(testutls.MockUser(), 4),
-			init: func(args args) *Patches {
+			init: func(args args) *gomonkey.Patches {
 				return gomonkey.ApplyFunc(rediscache.GetUser,
 					func(userID int, ctx context.Context) (*models.User, error) {
 						return args.user, nil
@@ -53,8 +49,8 @@ func initializeCases() []queryMeTestArgs {
 			name:     ErrorFromRedisCache,
 			args:     args{user: testutls.MockUser()},
 			wantErr:  true,
-			wantResp: &gqlmodels.User{},
-			init: func(args args) *Patches {
+			wantResp: &fm.User{},
+			init: func(args args) *gomonkey.Patches {
 				return gomonkey.ApplyFunc(rediscache.GetUser,
 					func(userID int, ctx context.Context) (*models.User, error) {
 						return nil, errors.New("redis cache")
@@ -71,6 +67,7 @@ func TestMe(t *testing.T) {
 	resolver1 := &resolver.Resolver{}
 	for _, tt := range cases {
 		patches := tt.init(tt.args)
+		time.Sleep(10 * time.Millisecond)
 		response, err := resolver1.Query().Me(context.TODO())
 		if tt.wantResp != nil && response != nil {
 			assert.Equal(t, tt.wantResp, response)
@@ -145,7 +142,8 @@ func initializeTestCases() []queryUsersArgs {
 }
 
 func executeQuery(resolver1 *resolver.Resolver,
-	ctx context.Context, pagination *fm.Pagination) (*gqlmodels.UsersPayload, error) {
+	ctx context.Context, pagination *fm.Pagination,
+) (*fm.UsersPayload, error) {
 	return resolver1.Query().Users(ctx, pagination)
 }
 

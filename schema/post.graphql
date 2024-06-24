@@ -8,7 +8,6 @@ type Post {
 }
 
 input PostCreateInput {
-    authorID: ID!
     content: String!
 }
 

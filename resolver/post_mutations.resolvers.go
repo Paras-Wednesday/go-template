@@ -19,7 +19,7 @@ import (
 // CreatePost is the resolver for the createPost field.
 func (r *mutationResolver) CreatePost(ctx context.Context, input gqlmodels.PostCreateInput) (*gqlmodels.Post, error) {
 	newPost := models.Post{
-		AuthorID: convert.StringToInt(input.AuthorID),
+		AuthorID: auth.AuthorIDFromContext(ctx),
 		Content:  input.Content,
 	}
 

@@ -29,7 +29,7 @@ func (r *queryResolver) PostByID(ctx context.Context, id string) (*gqlmodels.Pos
 }
 
 // AllPostByAuthor is the resolver for the allPostByAuthor field.
-func (r *queryResolver) AllPostByAuthor(ctx context.Context, authorID string, pagination gqlmodels.Pagination) (*gqlmodels.PostsPayload, error) {
+func (r *queryResolver) AllPostByAuthor(ctx context.Context, pagination gqlmodels.Pagination) (*gqlmodels.PostsPayload, error) {
 	if pagination.Limit < 0 || pagination.Page < 1 {
 		return nil, resultwrapper.ResolverWrapperFromMessage(
 			http.StatusBadRequest, "pagination or limit can not be negative")
@@ -37,7 +37,7 @@ func (r *queryResolver) AllPostByAuthor(ctx context.Context, authorID string, pa
 
 	posts, count, err := daos.FindAllPostBylAuthorWithCount(
 		ctx,
-		convert.StringToInt(authorID),
+		auth.AuthorIDFromContext(ctx),
 		qm.Limit(pagination.Limit),
 		qm.Offset(pagination.Limit*(pagination.Page-1)),
 	)

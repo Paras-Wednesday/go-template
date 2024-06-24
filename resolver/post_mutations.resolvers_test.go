@@ -26,8 +26,7 @@ func TestCreatePost(t *testing.T) {
 		{
 			name: "should create post",
 			req: fm.PostCreateInput{
-				AuthorID: "1",
-				Content:  "This is a good post",
+				Content: "This is a good post",
 			},
 			wantResp: &fm.Post{
 				ID:       "1",

@@ -166,7 +166,7 @@ func TestAllPostByAuthor(t *testing.T) {
 			}()
 			time.Sleep(10 * time.Millisecond)
 			response, err := resolver.Query().AllPostByAuthor(
-				context.Background(), test.authorID, test.pagination)
+				context.Background(), test.pagination)
 			assert.Equal(t, test.wantErr, err != nil)
 			if err == nil {
 				assert.Equal(t, test.wantResp, response)

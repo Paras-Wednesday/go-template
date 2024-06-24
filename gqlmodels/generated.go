@@ -101,7 +101,7 @@ type ComplexityRoot struct {
 	}
 
 	Query struct {
-		AllPostByAuthor func(childComplexity int, authorID string, pagination Pagination) int
+		AllPostByAuthor func(childComplexity int, pagination Pagination) int
 		Author          func(childComplexity int, id string) int
 		Authors         func(childComplexity int, pagination Pagination) int
 		Me              func(childComplexity int) int
@@ -200,7 +200,7 @@ type QueryResolver interface {
 	Author(ctx context.Context, id string) (*Author, error)
 	Authors(ctx context.Context, pagination Pagination) (*AuthorsPayload, error)
 	PostByID(ctx context.Context, id string) (*Post, error)
-	AllPostByAuthor(ctx context.Context, authorID string, pagination Pagination) (*PostsPayload, error)
+	AllPostByAuthor(ctx context.Context, pagination Pagination) (*PostsPayload, error)
 	Me(ctx context.Context) (*User, error)
 	Users(ctx context.Context, pagination *Pagination) (*UsersPayload, error)
 }
@@ -543,7 +543,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Query.AllPostByAuthor(childComplexity, args["authorID"].(string), args["pagination"].(Pagination)), true
+		return e.complexity.Query.AllPostByAuthor(childComplexity, args["pagination"].(Pagination)), true
 
 	case "Query.author":
 		if e.complexity.Query.Author == nil {
@@ -986,6 +986,7 @@ type AuthorsPayload {
     authors: [Author!]
     total: Int!
 }
+
 `, BuiltIn: false},
 	{Name: "../schema/author_mutations.graphql", Input: `extend type Mutation {
     createAuthor(input: AuthorCreateInput!): Author!
@@ -1064,7 +1065,6 @@ input BooleanFilter {
 }
 
 input PostCreateInput {
-    authorID: ID!
     content: String!
 }
 
@@ -1088,7 +1088,7 @@ type PostsPayload {
 }`, BuiltIn: false},
 	{Name: "../schema/post_queries.graphql", Input: `extend type Query{
     postByID(id: ID!): Post!
-    allPostByAuthor(authorID: ID!, pagination: Pagination!): PostsPayload!
+    allPostByAuthor(pagination: Pagination!): PostsPayload!
 }`, BuiltIn: false},
 	{Name: "../schema/role.graphql", Input: `type Role {
     id: ID!
@@ -1255,8 +1255,7 @@ type ChangePasswordResponse {
 
 type RefreshTokenResponse {
     token: String!
-}
-`, BuiltIn: false},
+}`, BuiltIn: false},
 	{Name: "../schema/user_mutations.graphql", Input: `extend type Mutation {
     createUser(input: UserCreateInput!): User!
     updateUser(input: UserUpdateInput): User!
@@ -1517,24 +1516,15 @@ func (ec *executionContext) field_Query___type_args(ctx context.Context, rawArgs
 func (ec *executionContext) field_Query_allPostByAuthor_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
-	var arg0 string
-	if tmp, ok := rawArgs["authorID"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("authorID"))
-		arg0, err = ec.unmarshalNID2string(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["authorID"] = arg0
-	var arg1 Pagination
+	var arg0 Pagination
 	if tmp, ok := rawArgs["pagination"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("pagination"))
-		arg1, err = ec.unmarshalNPagination2goᚑtemplateᚋgqlmodelsᚐPagination(ctx, tmp)
+		arg0, err = ec.unmarshalNPagination2goᚑtemplateᚋgqlmodelsᚐPagination(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
-	args["pagination"] = arg1
+	args["pagination"] = arg0
 	return args, nil
 }
 
@@ -3716,7 +3706,7 @@ func (ec *executionContext) _Query_allPostByAuthor(ctx context.Context, field gr
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().AllPostByAuthor(rctx, fc.Args["authorID"].(string), fc.Args["pagination"].(Pagination))
+		return ec.resolvers.Query().AllPostByAuthor(rctx, fc.Args["pagination"].(Pagination))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -7866,21 +7856,13 @@ func (ec *executionContext) unmarshalInputPostCreateInput(ctx context.Context, o
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"authorID", "content"}
+	fieldsInOrder := [...]string{"content"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
 			continue
 		}
 		switch k {
-		case "authorID":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("authorID"))
-			it.AuthorID, err = ec.unmarshalNID2string(ctx, v)
-			if err != nil {
-				return it, err
-			}
 		case "content":
 			var err error
 

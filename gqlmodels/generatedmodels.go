@@ -94,8 +94,7 @@ type Post struct {
 }
 
 type PostCreateInput struct {
-	AuthorID string `json:"authorID"`
-	Content  string `json:"content"`
+	Content string `json:"content"`
 }
 
 type PostDeleteInput struct {

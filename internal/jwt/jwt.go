@@ -6,16 +6,16 @@ import (
 	"strings"
 	"time"
 
-	"go-template/models"
-	resultwrapper "go-template/pkg/utl/resultwrapper"
-
 	jwt "github.com/dgrijalva/jwt-go"
 	"github.com/volatiletech/sqlboiler/v4/boil"
+
+	"go-template/models"
+	resultwrapper "go-template/pkg/utl/resultwrapper"
 )
 
 // New generates new JWT service necessary for auth middleware
 func New(algo, secret string, ttlMinutes, minSecretLength int) (Service, error) {
-	var minSecretLen = 128
+	minSecretLen := 128
 	if minSecretLength > 0 {
 		minSecretLen = minSecretLength
 	}
@@ -81,6 +81,7 @@ func (s Service) GenerateTokenForAuthor(a *models.Author) (string, error) {
 		"id":   a.ID,
 		"e":    a.Email,
 		"exp":  time.Now().Add(s.ttl).Unix(),
+		"role": "", // have an empty role so when extracted it wouldn't panic
 		"type": "author",
 	}).SignedString(s.key)
 }

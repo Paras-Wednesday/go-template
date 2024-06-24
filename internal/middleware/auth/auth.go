@@ -169,12 +169,7 @@ func needsAuthOrSuperAdminAccess(ctx context.Context) bool {
 func verifySuperAdminRole(ctx context.Context, claims jwt.MapClaims) graphql2.ResponseHandler {
 	operation := graphql2.GetOperationContext(ctx).Operation
 	_, needsSuperAdminAccess := getAccessNeeds(operation)
-	role, ok := claims["role"].(string)
-	if !ok {
-		return resultwrapper.HandleGraphQLError(
-			"Unauthorized! \n Only admins are authorized to make this request.",
-		)
-	}
+	role, _ := claims["role"].(string)
 	if needsSuperAdminAccess && role != "SUPER_ADMIN" {
 		return resultwrapper.HandleGraphQLError(
 			"Unauthorized! \n Only admins are authorized to make this request.",

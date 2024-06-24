@@ -87,6 +87,7 @@ func MockJwt(role string) *jwt.Token {
 			"name": "John Doe",
 			"iat":  1516239022,
 			"role": role,
+			"type": "user",
 		},
 		Header: map[string]interface{}{
 			"token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9",

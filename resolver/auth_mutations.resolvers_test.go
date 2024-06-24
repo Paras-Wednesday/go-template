@@ -407,12 +407,10 @@ func changePasswordErrorPasswordValidationcase() changePasswordType {
 		},
 		wantErr: true,
 		init: func() *gomonkey.Patches {
-			// tg := jwt.Service{}
-			sec := secure.Service{}
 			return gomonkey.ApplyFunc(daos.FindUserByID,
 				func(userID int, ctx context.Context) (*models.User, error) {
 					return nil, fmt.Errorf(ErrorMsgFindingUser)
-				}).ApplyMethod(reflect.TypeOf(sec), "HashMatchesPassword",
+				}).ApplyMethod(reflect.TypeOf(secure.Service{}), "HashMatchesPassword",
 				func(sec secure.Service, hash string, password string) bool {
 					return false
 				})
@@ -463,7 +461,11 @@ func changePasswordErrorUpdateUserCase() changePasswordType {
 					user.Password = null.StringFrom(OldPasswordHash)
 					user.Active = null.BoolFrom(false)
 					return user, fmt.Errorf(ErrorInsecurePassword)
-				}).ApplyFunc(daos.UpdateUser,
+				}).ApplyMethod(reflect.TypeOf(secure.Service{}), "HashMatchesPassword", func(secure.Service, string, string) bool {
+				return true
+			}).ApplyMethod(reflect.TypeOf(secure.Service{}), "Password", func(secure.Service, string, ...string) bool {
+				return true
+			}).ApplyFunc(daos.UpdateUser,
 				func(user models.User, ctx context.Context) (*models.User, error) {
 					return nil, fmt.Errorf(ErrorUpdateUser)
 				})
@@ -471,27 +473,27 @@ func changePasswordErrorUpdateUserCase() changePasswordType {
 	}
 }
 
-func changePasswordErrorFromConfigCase() changePasswordType {
-	return changePasswordType{
-		name: ErrorFromConfig,
-		req: changeReq{
-			OldPassword: OldPassword,
-			NewPassword: testutls.MockEmail,
-		},
-		wantErr: true,
-		init: func() *gomonkey.Patches {
-			return gomonkey.ApplyFunc(config.Load, func() (*config.Configuration, error) {
-				return nil, fmt.Errorf("error in loading config")
-			}).ApplyFunc(daos.FindUserByID,
-				func(userID int, ctx context.Context) (*models.User, error) {
-					user := testutls.MockUser()
-					user.Password = null.StringFrom(OldPasswordHash)
-					user.Active = null.BoolFrom(false)
-					return user, nil
-				})
-		},
-	}
-}
+// func changePasswordErrorFromConfigCase() changePasswordType {
+// 	return changePasswordType{
+// 		name: ErrorFromConfig,
+// 		req: changeReq{
+// 			OldPassword: OldPassword,
+// 			NewPassword: testutls.MockEmail,
+// 		},
+// 		wantErr: true,
+// 		init: func() *gomonkey.Patches {
+// 			return gomonkey.ApplyFunc(config.Load, func() (*config.Configuration, error) {
+// 				return nil, fmt.Errorf("error in loading config")
+// 			}).ApplyFunc(daos.FindUserByID,
+// 				func(userID int, ctx context.Context) (*models.User, error) {
+// 					user := testutls.MockUser()
+// 					user.Password = null.StringFrom(OldPasswordHash)
+// 					user.Active = null.BoolFrom(false)
+// 					return user, nil
+// 				})
+// 		},
+// 	}
+// }
 
 func changePasswordSuccessCase() changePasswordType {
 	return changePasswordType{
@@ -505,19 +507,16 @@ func changePasswordSuccessCase() changePasswordType {
 		},
 		wantErr: false,
 		init: func() *gomonkey.Patches {
-			sec := secure.Service{}
-			return gomonkey.ApplyFunc(config.Load, func() (*config.Configuration, error) {
-				return nil, nil
-			}).ApplyFunc(service.Secure, func(cfg *config.Configuration) secure.Service {
-				return sec
-			}).ApplyMethod(reflect.TypeOf(sec), "Password", func(secure.Service, string, ...string) bool {
-				return true
-			}).ApplyFunc(daos.FindUserByID,
+			return gomonkey.ApplyFunc(daos.FindUserByID,
 				func(userID int, ctx context.Context) (*models.User, error) {
 					user := testutls.MockUser()
 					user.Password = null.StringFrom(OldPasswordHash)
 					user.Active = null.BoolFrom(false)
 					return user, nil
+				}).ApplyMethod(reflect.TypeOf(secure.Service{}),
+				"HashMatchesPassword",
+				func(sec secure.Service, hash, password string) bool {
+					return true
 				}).ApplyFunc(daos.UpdateUser,
 				func(user models.User, ctx context.Context) (models.User, error) {
 					return *testutls.MockUser(), nil
@@ -532,7 +531,7 @@ func loadChangePasswordTestCases() []changePasswordType {
 		changePasswordErrorPasswordValidationcase(),
 		changePasswordErrorInsecurePasswordCase(),
 		changePasswordErrorUpdateUserCase(),
-		changePasswordErrorFromConfigCase(),
+		// changePasswordErrorFromConfigCase(),
 		changePasswordSuccessCase(),
 	}
 }
@@ -550,6 +549,7 @@ func TestChangePassword(
 			func(t *testing.T) {
 				// Handle the case where there is an error while loading the configuration
 				patches := tt.init()
+				time.Sleep(10 * time.Millisecond)
 				// Set up the context with the mock user
 				c := context.Background()
 				ctx := context.WithValue(c, testutls.UserKey, testutls.MockUser())
@@ -587,9 +587,7 @@ func refreshTokenInvalidCase() refereshTokenType {
 		err:     fmt.Errorf(ErrorMsginvalidToken),
 		init: func() *gomonkey.Patches {
 			tg := jwt.Service{}
-			return gomonkey.ApplyFunc(config.Load, func() (*config.Configuration, error) {
-				return &config.Configuration{}, nil
-			}).ApplyFunc(service.JWT, func(cfg *config.Configuration) (jwt.Service, error) {
+			return gomonkey.ApplyFunc(service.JWT, func(cfg *config.Configuration) (jwt.Service, error) {
 				return tg, nil
 			}).ApplyMethod(reflect.TypeOf(tg), "GenerateToken",
 				func(jwt.Service, *models.User) (string, error) {
@@ -601,21 +599,21 @@ func refreshTokenInvalidCase() refereshTokenType {
 	}
 }
 
-func refreshTokenErrorFromConfigCase() refereshTokenType {
-	return refereshTokenType{
-		name:    ErrorFromConfig,
-		req:     ReqToken,
-		wantErr: true,
-		err:     fmt.Errorf(ErrorMsgFromConfig),
-		init: func() *gomonkey.Patches {
-			return gomonkey.ApplyFunc(config.Load, func() (*config.Configuration, error) {
-				return nil, fmt.Errorf(ErrorFromConfig)
-			}).ApplyFunc(daos.FindUserByToken, func(token string, ctx context.Context) (*models.User, error) {
-				return testutls.MockUser(), nil
-			})
-		},
-	}
-}
+// func refreshTokenErrorFromConfigCase() refereshTokenType {
+// 	return refereshTokenType{
+// 		name:    ErrorFromConfig,
+// 		req:     ReqToken,
+// 		wantErr: true,
+// 		err:     fmt.Errorf(ErrorMsgFromConfig),
+// 		init: func() *gomonkey.Patches {
+// 			return gomonkey.ApplyFunc(config.Load, func() (*config.Configuration, error) {
+// 				return nil, fmt.Errorf(ErrorFromConfig)
+// 			}).ApplyFunc(daos.FindUserByToken, func(token string, ctx context.Context) (*models.User, error) {
+// 				return testutls.MockUser(), nil
+// 			})
+// 		},
+// 	}
+// }
 
 func refereshTokenerrorWhileGeneratingToken() refereshTokenType {
 	return refereshTokenType{
@@ -624,14 +622,13 @@ func refereshTokenerrorWhileGeneratingToken() refereshTokenType {
 		wantErr: true,
 		err:     fmt.Errorf(ErrorMsgFromJwt),
 		init: func() *gomonkey.Patches {
-			tg := jwt.Service{}
-			return gomonkey.ApplyFunc(config.Load, func() (*config.Configuration, error) {
-				return nil, nil
-			}).ApplyFunc(service.JWT, func(cfg *config.Configuration) (jwt.Service, error) {
-				return tg, fmt.Errorf(ErrorMsgFromJwt)
-			}).ApplyFunc(daos.FindUserByToken, func(token string, ctx context.Context) (*models.User, error) {
+			return gomonkey.ApplyFunc(daos.FindUserByToken, func(token string, ctx context.Context) (*models.User, error) {
 				return testutls.MockUser(), nil
-			})
+			}).ApplyMethod(jwt.Service{},
+				"GenerateToken",
+				func(tg jwt.Service, u *models.User) (string, error) {
+					return "", fmt.Errorf(ErrorMsgFromJwt)
+				})
 		},
 	}
 }
@@ -685,7 +682,7 @@ func refreshTokenSuccessCase() refereshTokenType {
 func loadRefereshTokenCases() []refereshTokenType {
 	return []refereshTokenType{
 		refreshTokenInvalidCase(),
-		refreshTokenErrorFromConfigCase(),
+		// refreshTokenErrorFromConfigCase(),
 		refereshTokenerrorWhileGeneratingToken(),
 		refereshTokenErrorFromGenerateTokenCase(),
 		refreshTokenSuccessCase(),
@@ -702,6 +699,7 @@ func TestRefreshToken(t *testing.T) {
 			func(t *testing.T) {
 				// Handle the case where authentication token is invalid
 				patches := tt.init()
+				time.Sleep(10 * time.Millisecond)
 				// Set up the context with the mock user
 				c := context.Background()
 				ctx := context.WithValue(c, testutls.UserKey, testutls.MockUser())

@@ -29,7 +29,6 @@ type Author struct {
 	LastName  null.String `boil:"last_name" json:"last_name,omitempty" toml:"last_name" yaml:"last_name,omitempty"`
 	CreatedAt null.Time   `boil:"created_at" json:"created_at,omitempty" toml:"created_at" yaml:"created_at,omitempty"`
 	UpdatedAt null.Time   `boil:"updated_at" json:"updated_at,omitempty" toml:"updated_at" yaml:"updated_at,omitempty"`
-	DeletedAt null.Time   `boil:"deleted_at" json:"deleted_at,omitempty" toml:"deleted_at" yaml:"deleted_at,omitempty"`
 	Email     string      `boil:"email" json:"email" toml:"email" yaml:"email"`
 	Password  string      `boil:"password" json:"password" toml:"password" yaml:"password"`
 
@@ -43,7 +42,6 @@ var AuthorColumns = struct {
 	LastName  string
 	CreatedAt string
 	UpdatedAt string
-	DeletedAt string
 	Email     string
 	Password  string
 }{
@@ -52,7 +50,6 @@ var AuthorColumns = struct {
 	LastName:  "last_name",
 	CreatedAt: "created_at",
 	UpdatedAt: "updated_at",
-	DeletedAt: "deleted_at",
 	Email:     "email",
 	Password:  "password",
 }
@@ -63,7 +60,6 @@ var AuthorTableColumns = struct {
 	LastName  string
 	CreatedAt string
 	UpdatedAt string
-	DeletedAt string
 	Email     string
 	Password  string
 }{
@@ -72,7 +68,6 @@ var AuthorTableColumns = struct {
 	LastName:  "authors.last_name",
 	CreatedAt: "authors.created_at",
 	UpdatedAt: "authors.updated_at",
-	DeletedAt: "authors.deleted_at",
 	Email:     "authors.email",
 	Password:  "authors.password",
 }
@@ -179,7 +174,6 @@ var AuthorWhere = struct {
 	LastName  whereHelpernull_String
 	CreatedAt whereHelpernull_Time
 	UpdatedAt whereHelpernull_Time
-	DeletedAt whereHelpernull_Time
 	Email     whereHelperstring
 	Password  whereHelperstring
 }{
@@ -188,7 +182,6 @@ var AuthorWhere = struct {
 	LastName:  whereHelpernull_String{field: "\"authors\".\"last_name\""},
 	CreatedAt: whereHelpernull_Time{field: "\"authors\".\"created_at\""},
 	UpdatedAt: whereHelpernull_Time{field: "\"authors\".\"updated_at\""},
-	DeletedAt: whereHelpernull_Time{field: "\"authors\".\"deleted_at\""},
 	Email:     whereHelperstring{field: "\"authors\".\"email\""},
 	Password:  whereHelperstring{field: "\"authors\".\"password\""},
 }
@@ -221,9 +214,9 @@ func (r *authorR) GetPosts() PostSlice {
 type authorL struct{}
 
 var (
-	authorAllColumns            = []string{"id", "first_name", "last_name", "created_at", "updated_at", "deleted_at", "email", "password"}
+	authorAllColumns            = []string{"id", "first_name", "last_name", "created_at", "updated_at", "email", "password"}
 	authorColumnsWithoutDefault = []string{"first_name", "email", "password"}
-	authorColumnsWithDefault    = []string{"id", "last_name", "created_at", "updated_at", "deleted_at"}
+	authorColumnsWithDefault    = []string{"id", "last_name", "created_at", "updated_at"}
 	authorPrimaryKeyColumns     = []string{"id"}
 	authorGeneratedColumns      = []string{}
 )

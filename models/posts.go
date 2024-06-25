@@ -29,7 +29,6 @@ type Post struct {
 	Content   string    `boil:"content" json:"content" toml:"content" yaml:"content"`
 	CreatedAt null.Time `boil:"created_at" json:"created_at,omitempty" toml:"created_at" yaml:"created_at,omitempty"`
 	UpdatedAt null.Time `boil:"updated_at" json:"updated_at,omitempty" toml:"updated_at" yaml:"updated_at,omitempty"`
-	DeletedAt null.Time `boil:"deleted_at" json:"deleted_at,omitempty" toml:"deleted_at" yaml:"deleted_at,omitempty"`
 
 	R *postR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L postL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -41,14 +40,12 @@ var PostColumns = struct {
 	Content   string
 	CreatedAt string
 	UpdatedAt string
-	DeletedAt string
 }{
 	ID:        "id",
 	AuthorID:  "author_id",
 	Content:   "content",
 	CreatedAt: "created_at",
 	UpdatedAt: "updated_at",
-	DeletedAt: "deleted_at",
 }
 
 var PostTableColumns = struct {
@@ -57,14 +54,12 @@ var PostTableColumns = struct {
 	Content   string
 	CreatedAt string
 	UpdatedAt string
-	DeletedAt string
 }{
 	ID:        "posts.id",
 	AuthorID:  "posts.author_id",
 	Content:   "posts.content",
 	CreatedAt: "posts.created_at",
 	UpdatedAt: "posts.updated_at",
-	DeletedAt: "posts.deleted_at",
 }
 
 // Generated where
@@ -75,14 +70,12 @@ var PostWhere = struct {
 	Content   whereHelperstring
 	CreatedAt whereHelpernull_Time
 	UpdatedAt whereHelpernull_Time
-	DeletedAt whereHelpernull_Time
 }{
 	ID:        whereHelperint{field: "\"posts\".\"id\""},
 	AuthorID:  whereHelperint{field: "\"posts\".\"author_id\""},
 	Content:   whereHelperstring{field: "\"posts\".\"content\""},
 	CreatedAt: whereHelpernull_Time{field: "\"posts\".\"created_at\""},
 	UpdatedAt: whereHelpernull_Time{field: "\"posts\".\"updated_at\""},
-	DeletedAt: whereHelpernull_Time{field: "\"posts\".\"deleted_at\""},
 }
 
 // PostRels is where relationship names are stored.
@@ -113,9 +106,9 @@ func (r *postR) GetAuthor() *Author {
 type postL struct{}
 
 var (
-	postAllColumns            = []string{"id", "author_id", "content", "created_at", "updated_at", "deleted_at"}
+	postAllColumns            = []string{"id", "author_id", "content", "created_at", "updated_at"}
 	postColumnsWithoutDefault = []string{"author_id", "content"}
-	postColumnsWithDefault    = []string{"id", "created_at", "updated_at", "deleted_at"}
+	postColumnsWithDefault    = []string{"id", "created_at", "updated_at"}
 	postPrimaryKeyColumns     = []string{"id"}
 	postGeneratedColumns      = []string{}
 )

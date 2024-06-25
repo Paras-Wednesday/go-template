@@ -34,14 +34,12 @@ func TestCreateAuthor(t *testing.T) {
 	mock, cleanup, _ := testutls.SetupMockDB(t)
 	defer cleanup()
 
-	// As the insertion will return the "id", and "deleted_at"
+	// As the insertion will return the "id"
 	// column which are non default column
 	rows := sqlmock.NewRows([]string{
 		models.AuthorColumns.ID,
-		models.AuthorColumns.DeletedAt,
 	}).AddRow(
 		testutls.MockAuthor().ID,
-		testutls.MockAuthor().DeletedAt,
 	)
 
 	mock.ExpectQuery(regexp.QuoteMeta(`INSERT INTO "authors"`)).

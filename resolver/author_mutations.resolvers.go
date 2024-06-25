@@ -6,15 +6,14 @@ package resolver
 
 import (
 	"context"
-
-	null "github.com/volatiletech/null/v8"
-
 	"go-template/daos"
 	"go-template/gqlmodels"
 	"go-template/models"
 	"go-template/pkg/utl/cnvrttogql"
 	"go-template/pkg/utl/convert"
 	"go-template/pkg/utl/resultwrapper"
+
+	null "github.com/volatiletech/null/v8"
 )
 
 // CreateAuthor is the resolver for the createAuthor field.

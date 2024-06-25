@@ -6,7 +6,6 @@ type Author {
     password: String
     createdAt: Int
     updatedAt: Int
-    deletedAt: Int
 }
 
 input AuthorCreateInput {

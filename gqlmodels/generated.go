@@ -46,7 +46,6 @@ type DirectiveRoot struct {
 type ComplexityRoot struct {
 	Author struct {
 		CreatedAt func(childComplexity int) int
-		DeletedAt func(childComplexity int) int
 		Email     func(childComplexity int) int
 		FirstName func(childComplexity int) int
 		ID        func(childComplexity int) int
@@ -90,7 +89,6 @@ type ComplexityRoot struct {
 		AuthorID  func(childComplexity int) int
 		Content   func(childComplexity int) int
 		CreatedAt func(childComplexity int) int
-		DeletedAt func(childComplexity int) int
 		ID        func(childComplexity int) int
 		UpdatedAt func(childComplexity int) int
 	}
@@ -116,7 +114,6 @@ type ComplexityRoot struct {
 	Role struct {
 		AccessLevel func(childComplexity int) int
 		CreatedAt   func(childComplexity int) int
-		DeletedAt   func(childComplexity int) int
 		ID          func(childComplexity int) int
 		Name        func(childComplexity int) int
 		UpdatedAt   func(childComplexity int) int
@@ -151,7 +148,6 @@ type ComplexityRoot struct {
 		Active             func(childComplexity int) int
 		Address            func(childComplexity int) int
 		CreatedAt          func(childComplexity int) int
-		DeletedAt          func(childComplexity int) int
 		Email              func(childComplexity int) int
 		FirstName          func(childComplexity int) int
 		ID                 func(childComplexity int) int
@@ -229,13 +225,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Author.CreatedAt(childComplexity), true
-
-	case "Author.deletedAt":
-		if e.complexity.Author.DeletedAt == nil {
-			break
-		}
-
-		return e.complexity.Author.DeletedAt(childComplexity), true
 
 	case "Author.email":
 		if e.complexity.Author.Email == nil {
@@ -498,13 +487,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Post.CreatedAt(childComplexity), true
 
-	case "Post.deletedAt":
-		if e.complexity.Post.DeletedAt == nil {
-			break
-		}
-
-		return e.complexity.Post.DeletedAt(childComplexity), true
-
 	case "Post.id":
 		if e.complexity.Post.ID == nil {
 			break
@@ -621,13 +603,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Role.CreatedAt(childComplexity), true
 
-	case "Role.deletedAt":
-		if e.complexity.Role.DeletedAt == nil {
-			break
-		}
-
-		return e.complexity.Role.DeletedAt(childComplexity), true
-
 	case "Role.id":
 		if e.complexity.Role.ID == nil {
 			break
@@ -718,13 +693,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.User.CreatedAt(childComplexity), true
-
-	case "User.deletedAt":
-		if e.complexity.User.DeletedAt == nil {
-			break
-		}
-
-		return e.complexity.User.DeletedAt(childComplexity), true
 
 	case "User.email":
 		if e.complexity.User.Email == nil {
@@ -962,7 +930,6 @@ var sources = []*ast.Source{
     password: String
     createdAt: Int
     updatedAt: Int
-    deletedAt: Int
 }
 
 input AuthorCreateInput {
@@ -1061,7 +1028,6 @@ input BooleanFilter {
     content: String!
     createdAt: Int
     updatedAt: Int
-    deletedAt: Int
 }
 
 input PostCreateInput {
@@ -1080,7 +1046,8 @@ input PostDeleteInput {
 type PostsPayload {
     posts: [Post!]
     total: Int!
-}`, BuiltIn: false},
+}
+`, BuiltIn: false},
 	{Name: "../schema/post_mutations.graphql", Input: `extend type Mutation {
     createPost(input: PostCreateInput!): Post!
     updatePost(input: PostUpdateInput!): Post!
@@ -1095,7 +1062,6 @@ type PostsPayload {
     accessLevel: Int!
     name: String!
     updatedAt: Int
-    deletedAt: Int
     createdAt: Int
     users: [User]
 }
@@ -1115,7 +1081,6 @@ input RoleWhere {
     accessLevel: IntFilter
     name: StringFilter
     updatedAt: IntFilter
-    deletedAt: IntFilter
     createdAt: IntFilter
     users: UserWhere
     or: RoleWhere
@@ -1130,7 +1095,6 @@ input RoleUpdateInput {
     accessLevel: Int
     name: String
     updatedAt: Int
-    deletedAt: Int
     createdAt: Int
 }
 
@@ -1156,7 +1120,8 @@ type RolesDeletePayload {
 
 type RolesUpdatePayload {
     ok: Boolean!
-}`, BuiltIn: false},
+}
+`, BuiltIn: false},
 	{Name: "../schema/role_mutations.graphql", Input: `extend type Mutation {
     createRole(input: RoleCreateInput!): RolePayload!
 }`, BuiltIn: false},
@@ -1178,7 +1143,6 @@ type RolesUpdatePayload {
     token: String
     role: Role
     createdAt: Int
-    deletedAt: Int
     updatedAt: Int
 }
 
@@ -1202,7 +1166,6 @@ input UserWhere {
     token: StringFilter
     role: RoleWhere
     createdAt: IntFilter
-    deletedAt: IntFilter
     updatedAt: IntFilter
     or: UserWhere
     and: UserWhere
@@ -1255,7 +1218,8 @@ type ChangePasswordResponse {
 
 type RefreshTokenResponse {
     token: String!
-}`, BuiltIn: false},
+}
+`, BuiltIn: false},
 	{Name: "../schema/user_mutations.graphql", Input: `extend type Mutation {
     createUser(input: UserCreateInput!): User!
     updateUser(input: UserUpdateInput): User!
@@ -1268,7 +1232,8 @@ type RefreshTokenResponse {
 	{Name: "../schema/utils.graphql", Input: `input Pagination {
     limit: Int!
     page: Int!
-}`, BuiltIn: false},
+}
+`, BuiltIn: false},
 }
 var parsedSchema = gqlparser.MustLoadSchema(sources...)
 
@@ -1925,47 +1890,6 @@ func (ec *executionContext) fieldContext_Author_updatedAt(ctx context.Context, f
 	return fc, nil
 }
 
-func (ec *executionContext) _Author_deletedAt(ctx context.Context, field graphql.CollectedField, obj *Author) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Author_deletedAt(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.DeletedAt, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.(*int)
-	fc.Result = res
-	return ec.marshalOInt2ᚖint(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_Author_deletedAt(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Author",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type Int does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
 func (ec *executionContext) _AuthorsPayload_authors(ctx context.Context, field graphql.CollectedField, obj *AuthorsPayload) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_AuthorsPayload_authors(ctx, field)
 	if err != nil {
@@ -2016,8 +1940,6 @@ func (ec *executionContext) fieldContext_AuthorsPayload_authors(ctx context.Cont
 				return ec.fieldContext_Author_createdAt(ctx, field)
 			case "updatedAt":
 				return ec.fieldContext_Author_updatedAt(ctx, field)
-			case "deletedAt":
-				return ec.fieldContext_Author_deletedAt(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Author", field.Name)
 		},
@@ -2489,8 +2411,6 @@ func (ec *executionContext) fieldContext_Mutation_createAuthor(ctx context.Conte
 				return ec.fieldContext_Author_createdAt(ctx, field)
 			case "updatedAt":
 				return ec.fieldContext_Author_updatedAt(ctx, field)
-			case "deletedAt":
-				return ec.fieldContext_Author_deletedAt(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Author", field.Name)
 		},
@@ -2561,8 +2481,6 @@ func (ec *executionContext) fieldContext_Mutation_updateAuthor(ctx context.Conte
 				return ec.fieldContext_Author_createdAt(ctx, field)
 			case "updatedAt":
 				return ec.fieldContext_Author_updatedAt(ctx, field)
-			case "deletedAt":
-				return ec.fieldContext_Author_deletedAt(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Author", field.Name)
 		},
@@ -2633,8 +2551,6 @@ func (ec *executionContext) fieldContext_Mutation_deleteAuthor(ctx context.Conte
 				return ec.fieldContext_Author_createdAt(ctx, field)
 			case "updatedAt":
 				return ec.fieldContext_Author_updatedAt(ctx, field)
-			case "deletedAt":
-				return ec.fieldContext_Author_deletedAt(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Author", field.Name)
 		},
@@ -2701,8 +2617,6 @@ func (ec *executionContext) fieldContext_Mutation_createPost(ctx context.Context
 				return ec.fieldContext_Post_createdAt(ctx, field)
 			case "updatedAt":
 				return ec.fieldContext_Post_updatedAt(ctx, field)
-			case "deletedAt":
-				return ec.fieldContext_Post_deletedAt(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Post", field.Name)
 		},
@@ -2769,8 +2683,6 @@ func (ec *executionContext) fieldContext_Mutation_updatePost(ctx context.Context
 				return ec.fieldContext_Post_createdAt(ctx, field)
 			case "updatedAt":
 				return ec.fieldContext_Post_updatedAt(ctx, field)
-			case "deletedAt":
-				return ec.fieldContext_Post_deletedAt(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Post", field.Name)
 		},
@@ -2837,8 +2749,6 @@ func (ec *executionContext) fieldContext_Mutation_deletePost(ctx context.Context
 				return ec.fieldContext_Post_createdAt(ctx, field)
 			case "updatedAt":
 				return ec.fieldContext_Post_updatedAt(ctx, field)
-			case "deletedAt":
-				return ec.fieldContext_Post_deletedAt(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Post", field.Name)
 		},
@@ -2981,8 +2891,6 @@ func (ec *executionContext) fieldContext_Mutation_createUser(ctx context.Context
 				return ec.fieldContext_User_role(ctx, field)
 			case "createdAt":
 				return ec.fieldContext_User_createdAt(ctx, field)
-			case "deletedAt":
-				return ec.fieldContext_User_deletedAt(ctx, field)
 			case "updatedAt":
 				return ec.fieldContext_User_updatedAt(ctx, field)
 			}
@@ -3069,8 +2977,6 @@ func (ec *executionContext) fieldContext_Mutation_updateUser(ctx context.Context
 				return ec.fieldContext_User_role(ctx, field)
 			case "createdAt":
 				return ec.fieldContext_User_createdAt(ctx, field)
-			case "deletedAt":
-				return ec.fieldContext_User_deletedAt(ctx, field)
 			case "updatedAt":
 				return ec.fieldContext_User_updatedAt(ctx, field)
 			}
@@ -3352,47 +3258,6 @@ func (ec *executionContext) fieldContext_Post_updatedAt(ctx context.Context, fie
 	return fc, nil
 }
 
-func (ec *executionContext) _Post_deletedAt(ctx context.Context, field graphql.CollectedField, obj *Post) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Post_deletedAt(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.DeletedAt, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.(*int)
-	fc.Result = res
-	return ec.marshalOInt2ᚖint(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_Post_deletedAt(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Post",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type Int does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
 func (ec *executionContext) _PostsPayload_posts(ctx context.Context, field graphql.CollectedField, obj *PostsPayload) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_PostsPayload_posts(ctx, field)
 	if err != nil {
@@ -3439,8 +3304,6 @@ func (ec *executionContext) fieldContext_PostsPayload_posts(ctx context.Context,
 				return ec.fieldContext_Post_createdAt(ctx, field)
 			case "updatedAt":
 				return ec.fieldContext_Post_updatedAt(ctx, field)
-			case "deletedAt":
-				return ec.fieldContext_Post_deletedAt(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Post", field.Name)
 		},
@@ -3544,8 +3407,6 @@ func (ec *executionContext) fieldContext_Query_author(ctx context.Context, field
 				return ec.fieldContext_Author_createdAt(ctx, field)
 			case "updatedAt":
 				return ec.fieldContext_Author_updatedAt(ctx, field)
-			case "deletedAt":
-				return ec.fieldContext_Author_deletedAt(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Author", field.Name)
 		},
@@ -3672,8 +3533,6 @@ func (ec *executionContext) fieldContext_Query_postByID(ctx context.Context, fie
 				return ec.fieldContext_Post_createdAt(ctx, field)
 			case "updatedAt":
 				return ec.fieldContext_Post_updatedAt(ctx, field)
-			case "deletedAt":
-				return ec.fieldContext_Post_deletedAt(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Post", field.Name)
 		},
@@ -3818,8 +3677,6 @@ func (ec *executionContext) fieldContext_Query_me(ctx context.Context, field gra
 				return ec.fieldContext_User_role(ctx, field)
 			case "createdAt":
 				return ec.fieldContext_User_createdAt(ctx, field)
-			case "deletedAt":
-				return ec.fieldContext_User_deletedAt(ctx, field)
 			case "updatedAt":
 				return ec.fieldContext_User_updatedAt(ctx, field)
 			}
@@ -4233,47 +4090,6 @@ func (ec *executionContext) fieldContext_Role_updatedAt(ctx context.Context, fie
 	return fc, nil
 }
 
-func (ec *executionContext) _Role_deletedAt(ctx context.Context, field graphql.CollectedField, obj *Role) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Role_deletedAt(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.DeletedAt, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.(*int)
-	fc.Result = res
-	return ec.marshalOInt2ᚖint(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_Role_deletedAt(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Role",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type Int does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
 func (ec *executionContext) _Role_createdAt(ctx context.Context, field graphql.CollectedField, obj *Role) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Role_createdAt(ctx, field)
 	if err != nil {
@@ -4379,8 +4195,6 @@ func (ec *executionContext) fieldContext_Role_users(ctx context.Context, field g
 				return ec.fieldContext_User_role(ctx, field)
 			case "createdAt":
 				return ec.fieldContext_User_createdAt(ctx, field)
-			case "deletedAt":
-				return ec.fieldContext_User_deletedAt(ctx, field)
 			case "updatedAt":
 				return ec.fieldContext_User_updatedAt(ctx, field)
 			}
@@ -4481,8 +4295,6 @@ func (ec *executionContext) fieldContext_RolePayload_role(ctx context.Context, f
 				return ec.fieldContext_Role_name(ctx, field)
 			case "updatedAt":
 				return ec.fieldContext_Role_updatedAt(ctx, field)
-			case "deletedAt":
-				return ec.fieldContext_Role_deletedAt(ctx, field)
 			case "createdAt":
 				return ec.fieldContext_Role_createdAt(ctx, field)
 			case "users":
@@ -4585,8 +4397,6 @@ func (ec *executionContext) fieldContext_RolesPayload_roles(ctx context.Context,
 				return ec.fieldContext_Role_name(ctx, field)
 			case "updatedAt":
 				return ec.fieldContext_Role_updatedAt(ctx, field)
-			case "deletedAt":
-				return ec.fieldContext_Role_deletedAt(ctx, field)
 			case "createdAt":
 				return ec.fieldContext_Role_createdAt(ctx, field)
 			case "users":
@@ -4722,8 +4532,6 @@ func (ec *executionContext) fieldContext_Subscription_userNotification(ctx conte
 				return ec.fieldContext_User_role(ctx, field)
 			case "createdAt":
 				return ec.fieldContext_User_createdAt(ctx, field)
-			case "deletedAt":
-				return ec.fieldContext_User_deletedAt(ctx, field)
 			case "updatedAt":
 				return ec.fieldContext_User_updatedAt(ctx, field)
 			}
@@ -5272,8 +5080,6 @@ func (ec *executionContext) fieldContext_User_role(ctx context.Context, field gr
 				return ec.fieldContext_Role_name(ctx, field)
 			case "updatedAt":
 				return ec.fieldContext_Role_updatedAt(ctx, field)
-			case "deletedAt":
-				return ec.fieldContext_Role_deletedAt(ctx, field)
 			case "createdAt":
 				return ec.fieldContext_Role_createdAt(ctx, field)
 			case "users":
@@ -5314,47 +5120,6 @@ func (ec *executionContext) _User_createdAt(ctx context.Context, field graphql.C
 }
 
 func (ec *executionContext) fieldContext_User_createdAt(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "User",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type Int does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _User_deletedAt(ctx context.Context, field graphql.CollectedField, obj *User) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_User_deletedAt(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.DeletedAt, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.(*int)
-	fc.Result = res
-	return ec.marshalOInt2ᚖint(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_User_deletedAt(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "User",
 		Field:      field,
@@ -5519,8 +5284,6 @@ func (ec *executionContext) fieldContext_UserPayload_user(ctx context.Context, f
 				return ec.fieldContext_User_role(ctx, field)
 			case "createdAt":
 				return ec.fieldContext_User_createdAt(ctx, field)
-			case "deletedAt":
-				return ec.fieldContext_User_deletedAt(ctx, field)
 			case "updatedAt":
 				return ec.fieldContext_User_updatedAt(ctx, field)
 			}
@@ -5597,8 +5360,6 @@ func (ec *executionContext) fieldContext_UsersPayload_users(ctx context.Context,
 				return ec.fieldContext_User_role(ctx, field)
 			case "createdAt":
 				return ec.fieldContext_User_createdAt(ctx, field)
-			case "deletedAt":
-				return ec.fieldContext_User_deletedAt(ctx, field)
 			case "updatedAt":
 				return ec.fieldContext_User_updatedAt(ctx, field)
 			}
@@ -8056,7 +7817,7 @@ func (ec *executionContext) unmarshalInputRoleUpdateInput(ctx context.Context, o
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"accessLevel", "name", "updatedAt", "deletedAt", "createdAt"}
+	fieldsInOrder := [...]string{"accessLevel", "name", "updatedAt", "createdAt"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -8087,14 +7848,6 @@ func (ec *executionContext) unmarshalInputRoleUpdateInput(ctx context.Context, o
 			if err != nil {
 				return it, err
 			}
-		case "deletedAt":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("deletedAt"))
-			it.DeletedAt, err = ec.unmarshalOInt2ᚖint(ctx, v)
-			if err != nil {
-				return it, err
-			}
 		case "createdAt":
 			var err error
 
@@ -8116,7 +7869,7 @@ func (ec *executionContext) unmarshalInputRoleWhere(ctx context.Context, obj int
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"id", "accessLevel", "name", "updatedAt", "deletedAt", "createdAt", "users", "or", "and"}
+	fieldsInOrder := [...]string{"id", "accessLevel", "name", "updatedAt", "createdAt", "users", "or", "and"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -8152,14 +7905,6 @@ func (ec *executionContext) unmarshalInputRoleWhere(ctx context.Context, obj int
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("updatedAt"))
 			it.UpdatedAt, err = ec.unmarshalOIntFilter2ᚖgoᚑtemplateᚋgqlmodelsᚐIntFilter(ctx, v)
-			if err != nil {
-				return it, err
-			}
-		case "deletedAt":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("deletedAt"))
-			it.DeletedAt, err = ec.unmarshalOIntFilter2ᚖgoᚑtemplateᚋgqlmodelsᚐIntFilter(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -8572,7 +8317,7 @@ func (ec *executionContext) unmarshalInputUserWhere(ctx context.Context, obj int
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"id", "firstName", "lastName", "username", "password", "email", "mobile", "address", "active", "lastLogin", "lastPasswordChange", "token", "role", "createdAt", "deletedAt", "updatedAt", "or", "and"}
+	fieldsInOrder := [...]string{"id", "firstName", "lastName", "username", "password", "email", "mobile", "address", "active", "lastLogin", "lastPasswordChange", "token", "role", "createdAt", "updatedAt", "or", "and"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -8691,14 +8436,6 @@ func (ec *executionContext) unmarshalInputUserWhere(ctx context.Context, obj int
 			if err != nil {
 				return it, err
 			}
-		case "deletedAt":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("deletedAt"))
-			it.DeletedAt, err = ec.unmarshalOIntFilter2ᚖgoᚑtemplateᚋgqlmodelsᚐIntFilter(ctx, v)
-			if err != nil {
-				return it, err
-			}
 		case "updatedAt":
 			var err error
 
@@ -8814,10 +8551,6 @@ func (ec *executionContext) _Author(ctx context.Context, sel ast.SelectionSet, o
 		case "updatedAt":
 
 			out.Values[i] = ec._Author_updatedAt(ctx, field, obj)
-
-		case "deletedAt":
-
-			out.Values[i] = ec._Author_deletedAt(ctx, field, obj)
 
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
@@ -9073,10 +8806,6 @@ func (ec *executionContext) _Post(ctx context.Context, sel ast.SelectionSet, obj
 		case "updatedAt":
 
 			out.Values[i] = ec._Post_updatedAt(ctx, field, obj)
-
-		case "deletedAt":
-
-			out.Values[i] = ec._Post_deletedAt(ctx, field, obj)
 
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
@@ -9342,10 +9071,6 @@ func (ec *executionContext) _Role(ctx context.Context, sel ast.SelectionSet, obj
 
 			out.Values[i] = ec._Role_updatedAt(ctx, field, obj)
 
-		case "deletedAt":
-
-			out.Values[i] = ec._Role_deletedAt(ctx, field, obj)
-
 		case "createdAt":
 
 			out.Values[i] = ec._Role_createdAt(ctx, field, obj)
@@ -9593,10 +9318,6 @@ func (ec *executionContext) _User(ctx context.Context, sel ast.SelectionSet, obj
 		case "createdAt":
 
 			out.Values[i] = ec._User_createdAt(ctx, field, obj)
-
-		case "deletedAt":
-
-			out.Values[i] = ec._User_deletedAt(ctx, field, obj)
 
 		case "updatedAt":
 

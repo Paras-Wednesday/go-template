@@ -3,7 +3,6 @@ type Author {
     firstName: String!
     lastName: String!
     email: String!
-    password: String
     createdAt: Int
     updatedAt: Int
 }

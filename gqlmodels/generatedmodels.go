@@ -3,13 +3,12 @@
 package gqlmodels
 
 type Author struct {
-	ID        string  `json:"id"`
-	FirstName string  `json:"firstName"`
-	LastName  string  `json:"lastName"`
-	Email     string  `json:"email"`
-	Password  *string `json:"password"`
-	CreatedAt *int    `json:"createdAt"`
-	UpdatedAt *int    `json:"updatedAt"`
+	ID        string `json:"id"`
+	FirstName string `json:"firstName"`
+	LastName  string `json:"lastName"`
+	Email     string `json:"email"`
+	CreatedAt *int   `json:"createdAt"`
+	UpdatedAt *int   `json:"updatedAt"`
 }
 
 type AuthorCreateInput struct {

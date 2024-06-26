@@ -50,7 +50,6 @@ type ComplexityRoot struct {
 		FirstName func(childComplexity int) int
 		ID        func(childComplexity int) int
 		LastName  func(childComplexity int) int
-		Password  func(childComplexity int) int
 		UpdatedAt func(childComplexity int) int
 	}
 
@@ -253,13 +252,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Author.LastName(childComplexity), true
-
-	case "Author.password":
-		if e.complexity.Author.Password == nil {
-			break
-		}
-
-		return e.complexity.Author.Password(childComplexity), true
 
 	case "Author.updatedAt":
 		if e.complexity.Author.UpdatedAt == nil {
@@ -921,7 +913,6 @@ var sources = []*ast.Source{
     firstName: String!
     lastName: String!
     email: String!
-    password: String
     createdAt: Int
     updatedAt: Int
 }
@@ -1742,47 +1733,6 @@ func (ec *executionContext) fieldContext_Author_email(ctx context.Context, field
 	return fc, nil
 }
 
-func (ec *executionContext) _Author_password(ctx context.Context, field graphql.CollectedField, obj *Author) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Author_password(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.Password, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.(*string)
-	fc.Result = res
-	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_Author_password(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Author",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type String does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
 func (ec *executionContext) _Author_createdAt(ctx context.Context, field graphql.CollectedField, obj *Author) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Author_createdAt(ctx, field)
 	if err != nil {
@@ -1909,8 +1859,6 @@ func (ec *executionContext) fieldContext_AuthorsPayload_authors(ctx context.Cont
 				return ec.fieldContext_Author_lastName(ctx, field)
 			case "email":
 				return ec.fieldContext_Author_email(ctx, field)
-			case "password":
-				return ec.fieldContext_Author_password(ctx, field)
 			case "createdAt":
 				return ec.fieldContext_Author_createdAt(ctx, field)
 			case "updatedAt":
@@ -2380,8 +2328,6 @@ func (ec *executionContext) fieldContext_Mutation_createAuthor(ctx context.Conte
 				return ec.fieldContext_Author_lastName(ctx, field)
 			case "email":
 				return ec.fieldContext_Author_email(ctx, field)
-			case "password":
-				return ec.fieldContext_Author_password(ctx, field)
 			case "createdAt":
 				return ec.fieldContext_Author_createdAt(ctx, field)
 			case "updatedAt":
@@ -2450,8 +2396,6 @@ func (ec *executionContext) fieldContext_Mutation_updateAuthor(ctx context.Conte
 				return ec.fieldContext_Author_lastName(ctx, field)
 			case "email":
 				return ec.fieldContext_Author_email(ctx, field)
-			case "password":
-				return ec.fieldContext_Author_password(ctx, field)
 			case "createdAt":
 				return ec.fieldContext_Author_createdAt(ctx, field)
 			case "updatedAt":
@@ -2520,8 +2464,6 @@ func (ec *executionContext) fieldContext_Mutation_deleteAuthor(ctx context.Conte
 				return ec.fieldContext_Author_lastName(ctx, field)
 			case "email":
 				return ec.fieldContext_Author_email(ctx, field)
-			case "password":
-				return ec.fieldContext_Author_password(ctx, field)
 			case "createdAt":
 				return ec.fieldContext_Author_createdAt(ctx, field)
 			case "updatedAt":
@@ -3365,8 +3307,6 @@ func (ec *executionContext) fieldContext_Query_author(ctx context.Context, field
 				return ec.fieldContext_Author_lastName(ctx, field)
 			case "email":
 				return ec.fieldContext_Author_email(ctx, field)
-			case "password":
-				return ec.fieldContext_Author_password(ctx, field)
 			case "createdAt":
 				return ec.fieldContext_Author_createdAt(ctx, field)
 			case "updatedAt":
@@ -8468,10 +8408,6 @@ func (ec *executionContext) _Author(ctx context.Context, sel ast.SelectionSet, o
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
-		case "password":
-
-			out.Values[i] = ec._Author_password(ctx, field, obj)
-
 		case "createdAt":
 
 			out.Values[i] = ec._Author_createdAt(ctx, field, obj)

@@ -6,16 +6,15 @@ package resolver
 
 import (
 	"context"
-	"net/http"
-
-	"github.com/volatiletech/sqlboiler/v4/queries/qm"
-
 	"go-template/daos"
 	"go-template/gqlmodels"
 	"go-template/internal/middleware/auth"
 	"go-template/pkg/utl/cnvrttogql"
 	"go-template/pkg/utl/convert"
 	"go-template/pkg/utl/resultwrapper"
+	"net/http"
+
+	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 )
 
 // PostByID is the resolver for the postByID field.

@@ -39,7 +39,6 @@ type User struct {
 	RoleID             null.Int    `boil:"role_id" json:"role_id,omitempty" toml:"role_id" yaml:"role_id,omitempty"`
 	CreatedAt          null.Time   `boil:"created_at" json:"created_at,omitempty" toml:"created_at" yaml:"created_at,omitempty"`
 	UpdatedAt          null.Time   `boil:"updated_at" json:"updated_at,omitempty" toml:"updated_at" yaml:"updated_at,omitempty"`
-	DeletedAt          null.Time   `boil:"deleted_at" json:"deleted_at,omitempty" toml:"deleted_at" yaml:"deleted_at,omitempty"`
 
 	R *userR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L userL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -61,7 +60,6 @@ var UserColumns = struct {
 	RoleID             string
 	CreatedAt          string
 	UpdatedAt          string
-	DeletedAt          string
 }{
 	ID:                 "id",
 	FirstName:          "first_name",
@@ -78,7 +76,6 @@ var UserColumns = struct {
 	RoleID:             "role_id",
 	CreatedAt:          "created_at",
 	UpdatedAt:          "updated_at",
-	DeletedAt:          "deleted_at",
 }
 
 var UserTableColumns = struct {
@@ -97,7 +94,6 @@ var UserTableColumns = struct {
 	RoleID             string
 	CreatedAt          string
 	UpdatedAt          string
-	DeletedAt          string
 }{
 	ID:                 "users.id",
 	FirstName:          "users.first_name",
@@ -114,7 +110,6 @@ var UserTableColumns = struct {
 	RoleID:             "users.role_id",
 	CreatedAt:          "users.created_at",
 	UpdatedAt:          "users.updated_at",
-	DeletedAt:          "users.deleted_at",
 }
 
 // Generated where
@@ -183,7 +178,6 @@ var UserWhere = struct {
 	RoleID             whereHelpernull_Int
 	CreatedAt          whereHelpernull_Time
 	UpdatedAt          whereHelpernull_Time
-	DeletedAt          whereHelpernull_Time
 }{
 	ID:                 whereHelperint{field: "\"users\".\"id\""},
 	FirstName:          whereHelpernull_String{field: "\"users\".\"first_name\""},
@@ -200,7 +194,6 @@ var UserWhere = struct {
 	RoleID:             whereHelpernull_Int{field: "\"users\".\"role_id\""},
 	CreatedAt:          whereHelpernull_Time{field: "\"users\".\"created_at\""},
 	UpdatedAt:          whereHelpernull_Time{field: "\"users\".\"updated_at\""},
-	DeletedAt:          whereHelpernull_Time{field: "\"users\".\"deleted_at\""},
 }
 
 // UserRels is where relationship names are stored.
@@ -231,9 +224,9 @@ func (r *userR) GetRole() *Role {
 type userL struct{}
 
 var (
-	userAllColumns            = []string{"id", "first_name", "last_name", "username", "password", "email", "mobile", "address", "active", "last_login", "last_password_change", "token", "role_id", "created_at", "updated_at", "deleted_at"}
+	userAllColumns            = []string{"id", "first_name", "last_name", "username", "password", "email", "mobile", "address", "active", "last_login", "last_password_change", "token", "role_id", "created_at", "updated_at"}
 	userColumnsWithoutDefault = []string{}
-	userColumnsWithDefault    = []string{"id", "first_name", "last_name", "username", "password", "email", "mobile", "address", "active", "last_login", "last_password_change", "token", "role_id", "created_at", "updated_at", "deleted_at"}
+	userColumnsWithDefault    = []string{"id", "first_name", "last_name", "username", "password", "email", "mobile", "address", "active", "last_login", "last_password_change", "token", "role_id", "created_at", "updated_at"}
 	userPrimaryKeyColumns     = []string{"id"}
 	userGeneratedColumns      = []string{}
 )

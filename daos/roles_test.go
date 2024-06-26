@@ -3,16 +3,16 @@ package daos_test
 import (
 	"context"
 	"fmt"
-	"go-template/daos"
-	"go-template/internal/config"
-	"go-template/models"
 	"regexp"
 	"testing"
 
 	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/stretchr/testify/assert"
-	"github.com/volatiletech/null/v8"
 	"github.com/volatiletech/sqlboiler/v4/boil"
+
+	"go-template/daos"
+	"go-template/internal/config"
+	"go-template/models"
 )
 
 func TestCreateRoleTx(t *testing.T) {
@@ -46,7 +46,7 @@ func TestCreateRoleTx(t *testing.T) {
 		}()
 		boil.SetDB(db)
 
-		rows := sqlmock.NewRows([]string{"id", "deleted_at"}).AddRow(1, null.Time{})
+		rows := sqlmock.NewRows([]string{"id"}).AddRow(1)
 		mock.ExpectQuery(regexp.QuoteMeta(`INSERT INTO "roles"`)).
 			WithArgs().
 			WillReturnRows(rows)

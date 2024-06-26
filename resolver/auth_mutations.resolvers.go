@@ -9,9 +9,7 @@ import (
 	"fmt"
 	"go-template/daos"
 	"go-template/gqlmodels"
-	"go-template/internal/config"
 	"go-template/internal/middleware/auth"
-	"go-template/internal/service"
 	"go-template/pkg/utl/convert"
 	"go-template/pkg/utl/resultwrapper"
 
@@ -24,19 +22,7 @@ func (r *mutationResolver) Login(ctx context.Context, username string, password 
 	if err != nil {
 		return nil, err
 	}
-	// loading configurations
-	cfg, err := loadConfig()
-	if err != nil {
-		return nil, err
-	}
-	// creating new secure and token generation service
-	sec := service.Secure(cfg)
-	tg, err := service.JWT(cfg)
-	if err != nil {
-		return nil, fmt.Errorf("error in creating auth service")
-	}
-
-	if !u.Password.Valid || (!sec.HashMatchesPassword(u.Password.String, password)) {
+	if !u.Password.Valid || (!r.Sec.HashMatchesPassword(u.Password.String, password)) {
 		return nil, fmt.Errorf("username or password does not exist ")
 	}
 
@@ -44,17 +30,38 @@ func (r *mutationResolver) Login(ctx context.Context, username string, password 
 		return nil, resultwrapper.ErrUnauthorized
 	}
 
-	token, err := tg.GenerateToken(u)
+	token, err := r.JWTService.GenerateToken(u)
 	if err != nil {
 		return nil, resultwrapper.ErrUnauthorized
 	}
 
-	refreshToken := sec.Token(token)
+	refreshToken := r.Sec.Token(token)
 	u.Token = null.StringFrom(refreshToken)
 	_, err = daos.UpdateUser(*u, ctx)
 	if err != nil {
 		return nil, err
 	}
+
+	return &gqlmodels.LoginResponse{Token: token, RefreshToken: refreshToken}, nil
+}
+
+// AuthorLogin is the resolver for the authorLogin field.
+func (r *mutationResolver) AuthorLogin(ctx context.Context, email string, password string) (*gqlmodels.LoginResponse, error) {
+	author, err := daos.FindAuthorByEmail(ctx, email)
+	if err != nil {
+		return nil, fmt.Errorf("username or password does not exist haha")
+	}
+
+	if !r.Sec.HashMatchesPassword(author.Password, password) {
+		return nil, fmt.Errorf("username or password does not exist ")
+	}
+
+	token, err := r.JWTService.GenerateTokenForAuthor(author)
+	if err != nil {
+		return nil, resultwrapper.ErrUnauthorized
+	}
+
+	refreshToken := r.Sec.Token(token)
 
 	return &gqlmodels.LoginResponse{Token: token, RefreshToken: refreshToken}, nil
 }
@@ -67,26 +74,19 @@ func (r *mutationResolver) ChangePassword(ctx context.Context, oldPassword strin
 		return nil, resultwrapper.ResolverSQLError(err, "data")
 	}
 
-	// loading configurations
-	cfg, err := loadConfig()
-	if err != nil {
-		return nil, err
-	}
-	// creating new secure service
-	sec := service.Secure(cfg)
-	if !sec.HashMatchesPassword(convert.NullDotStringToString(u.Password), oldPassword) {
+	if !r.Sec.HashMatchesPassword(convert.NullDotStringToString(u.Password), oldPassword) {
 		return nil, fmt.Errorf("incorrect old password")
 	}
 
-	if !sec.Password(newPassword,
+	if !r.Sec.Password(newPassword,
 		convert.NullDotStringToString(u.FirstName),
 		convert.NullDotStringToString(u.LastName),
 		convert.NullDotStringToString(u.Username),
 		convert.NullDotStringToString(u.Email)) {
-		return nil, fmt.Errorf("insecure password")
+		return nil, fmt.Errorf("inr.Secure password")
 	}
 
-	u.Password = null.StringFrom(sec.Hash(newPassword))
+	u.Password = null.StringFrom(r.Sec.Hash(newPassword))
 	_, err = daos.UpdateUser(*u, ctx)
 	if err != nil {
 		return nil, resultwrapper.ResolverSQLError(err, "new information")
@@ -100,17 +100,7 @@ func (r *mutationResolver) RefreshToken(ctx context.Context, token string) (*gql
 	if err != nil {
 		return nil, resultwrapper.ResolverSQLError(err, "token")
 	}
-	// loading configurations
-	cfg, err := loadConfig()
-	if err != nil {
-		return nil, err
-	}
-	// creating new secure and token generation service
-	tg, err := service.JWT(cfg)
-	if err != nil {
-		return nil, fmt.Errorf("error in creating auth service ")
-	}
-	resp, err := tg.GenerateToken(user)
+	resp, err := r.JWTService.GenerateToken(user)
 	if err != nil {
 		return nil, err
 	}
@@ -121,17 +111,3 @@ func (r *mutationResolver) RefreshToken(ctx context.Context, token string) (*gql
 func (r *Resolver) Mutation() gqlmodels.MutationResolver { return &mutationResolver{r} }
 
 type mutationResolver struct{ *Resolver }
-
-// !!! WARNING !!!
-// The code below was going to be deleted when updating resolvers. It has been copied here so you have
-// one last chance to move it out of harms way if you want. There are two reasons this happens:
-//   - When renaming or deleting a resolver the old code will be put in here. You can safely delete
-//     it when you're done.
-//   - You have helper methods in this file. Move them out to keep these resolver files clean.
-func loadConfig() (*config.Configuration, error) {
-	cfg, err := config.Load()
-	if err != nil {
-		return nil, fmt.Errorf("error in loading config")
-	}
-	return cfg, nil
-}

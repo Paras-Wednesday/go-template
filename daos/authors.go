@@ -52,6 +52,11 @@ func FindAuthorByLastName(ctx context.Context, lname string) (*models.Author, er
 		One(ctx, contextExecutor)
 }
 
+func FindAuthorByEmail(ctx context.Context, email string) (*models.Author, error) {
+	contextExecutor := GetContextExecutor(nil)
+	return models.Authors(models.AuthorWhere.Email.EQ(email)).One(ctx, contextExecutor)
+}
+
 func GetAllAuthorsWithCount(ctx context.Context, queries ...qm.QueryMod) (models.AuthorSlice, int64, error) {
 	contextExecutor := GetContextExecutor(nil)
 

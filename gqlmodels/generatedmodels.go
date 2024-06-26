@@ -3,25 +3,23 @@
 package gqlmodels
 
 type Author struct {
-	ID        string `json:"id"`
-	FirstName string `json:"firstName"`
-	LastName  string `json:"lastName"`
-	CreatedAt *int   `json:"createdAt"`
-	UpdatedAt *int   `json:"updatedAt"`
-	DeletedAt *int   `json:"deletedAt"`
+	ID        string  `json:"id"`
+	FirstName string  `json:"firstName"`
+	LastName  string  `json:"lastName"`
+	Email     string  `json:"email"`
+	Password  *string `json:"password"`
+	CreatedAt *int    `json:"createdAt"`
+	UpdatedAt *int    `json:"updatedAt"`
 }
 
 type AuthorCreateInput struct {
+	Email     string `json:"email"`
+	Password  string `json:"password"`
 	FirstName string `json:"firstName"`
 	LastName  string `json:"lastName"`
 }
 
-type AuthorDeleteInput struct {
-	ID string `json:"id"`
-}
-
 type AuthorUpdateInput struct {
-	ID        string  `json:"id"`
 	FirstName *string `json:"firstName"`
 	LastName  *string `json:"lastName"`
 }
@@ -86,12 +84,10 @@ type Post struct {
 	Content   string `json:"content"`
 	CreatedAt *int   `json:"createdAt"`
 	UpdatedAt *int   `json:"updatedAt"`
-	DeletedAt *int   `json:"deletedAt"`
 }
 
 type PostCreateInput struct {
-	AuthorID string `json:"authorID"`
-	Content  string `json:"content"`
+	Content string `json:"content"`
 }
 
 type PostDeleteInput struct {
@@ -117,7 +113,6 @@ type Role struct {
 	AccessLevel int     `json:"accessLevel"`
 	Name        string  `json:"name"`
 	UpdatedAt   *int    `json:"updatedAt"`
-	DeletedAt   *int    `json:"deletedAt"`
 	CreatedAt   *int    `json:"createdAt"`
 	Users       []*User `json:"users"`
 }
@@ -149,7 +144,6 @@ type RoleUpdateInput struct {
 	AccessLevel *int    `json:"accessLevel"`
 	Name        *string `json:"name"`
 	UpdatedAt   *int    `json:"updatedAt"`
-	DeletedAt   *int    `json:"deletedAt"`
 	CreatedAt   *int    `json:"createdAt"`
 }
 
@@ -158,7 +152,6 @@ type RoleWhere struct {
 	AccessLevel *IntFilter    `json:"accessLevel"`
 	Name        *StringFilter `json:"name"`
 	UpdatedAt   *IntFilter    `json:"updatedAt"`
-	DeletedAt   *IntFilter    `json:"deletedAt"`
 	CreatedAt   *IntFilter    `json:"createdAt"`
 	Users       *UserWhere    `json:"users"`
 	Or          *RoleWhere    `json:"or"`
@@ -215,7 +208,6 @@ type User struct {
 	Token              *string `json:"token"`
 	Role               *Role   `json:"role"`
 	CreatedAt          *int    `json:"createdAt"`
-	DeletedAt          *int    `json:"deletedAt"`
 	UpdatedAt          *int    `json:"updatedAt"`
 }
 
@@ -267,7 +259,6 @@ type UserWhere struct {
 	Token              *StringFilter  `json:"token"`
 	Role               *RoleWhere     `json:"role"`
 	CreatedAt          *IntFilter     `json:"createdAt"`
-	DeletedAt          *IntFilter     `json:"deletedAt"`
 	UpdatedAt          *IntFilter     `json:"updatedAt"`
 	Or                 *UserWhere     `json:"or"`
 	And                *UserWhere     `json:"and"`

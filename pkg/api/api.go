@@ -12,6 +12,7 @@ import (
 	authMw "go-template/internal/middleware/auth"
 	"go-template/internal/postgres"
 	"go-template/internal/server"
+	"go-template/internal/service"
 	throttle "go-template/pkg/utl/throttle"
 	"go-template/resolver"
 
@@ -47,14 +48,15 @@ func Start(cfg *config.Configuration) (*echo.Echo, error) {
 	if err != nil {
 		return nil, err
 	}
-	if err != nil {
-		return nil, err
-	}
 
 	// Set up GraphQL
 	observers := map[string]chan *graphql.User{}
 	graphqlHandler := handler.New(graphql.NewExecutableSchema(graphql.Config{
-		Resolvers: &resolver.Resolver{Observers: observers},
+		Resolvers: &resolver.Resolver{
+			Observers:  observers,
+			Sec:        service.Secure(cfg),
+			JWTService: jwt,
+		},
 	}))
 
 	graphqlHandler.AroundOperations(func(ctx context.Context, next graphql2.OperationHandler) graphql2.ResponseHandler {

@@ -4,16 +4,16 @@ import (
 	"context"
 	"database/sql/driver"
 	"fmt"
-	"go-template/daos"
-	"go-template/models"
-	"go-template/testutls"
 	"regexp"
 	"testing"
 
 	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/stretchr/testify/assert"
-	"github.com/volatiletech/null/v8"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
+
+	"go-template/daos"
+	"go-template/models"
+	"go-template/testutls"
 )
 
 func TestCreatePost(t *testing.T) {
@@ -33,8 +33,7 @@ func TestCreatePost(t *testing.T) {
 			init: func(mock sqlmock.Sqlmock) {
 				rows := sqlmock.NewRows([]string{
 					models.PostColumns.ID,
-					models.PostColumns.DeletedAt,
-				}).AddRow(1, null.Time{})
+				}).AddRow(1)
 				mock.ExpectQuery(regexp.QuoteMeta(
 					`INSERT INTO "posts"`,
 				)).WithArgs().
@@ -159,31 +158,38 @@ func TestDeletePost(t *testing.T) {
 
 func TestFindPostById(t *testing.T) {
 	tests := []struct {
-		name    string
-		postID  int
-		wantErr bool
-		init    func(mock sqlmock.Sqlmock)
+		name     string
+		postID   int
+		authorID int
+		wantErr  bool
+		init     func(mock sqlmock.Sqlmock)
 	}{
 		{
-			name:    "Should return post with id 1",
-			postID:  1,
-			wantErr: false,
+			name:     "Should return post with id 1",
+			postID:   1,
+			authorID: 1,
+			wantErr:  false,
 			init: func(mock sqlmock.Sqlmock) {
 				rows := sqlmock.NewRows([]string{
 					models.AuthorColumns.ID,
 				}).AddRow(1)
 				mock.ExpectQuery(regexp.QuoteMeta(
-					`select * from "posts" where "id"=$1`,
+					`SELECT "posts".* FROM "posts" 
+                    WHERE ("posts"."author_id" = $1) AND ("posts"."id" = $2) 
+                    LIMIT 1;`,
 				)).WillReturnRows(rows)
 			},
 		},
 		{
-			name:    "Should return error on no such post",
-			postID:  1,
-			wantErr: true,
+			name:     "Should return error on no such post",
+			postID:   1,
+			authorID: 0,
+			wantErr:  true,
 			init: func(mock sqlmock.Sqlmock) {
 				mock.ExpectQuery(regexp.QuoteMeta(
-					`select * from "posts" where "id"=$1`,
+					`SELECT "posts".* FROM "posts" 
+                    WHERE ("posts"."author_id" = $1) AND ("posts"."id" = $2) 
+                    LIMIT 1;`,
 				)).WillReturnError(fmt.Errorf("no such post"))
 			},
 		},
@@ -194,7 +200,7 @@ func TestFindPostById(t *testing.T) {
 	for _, test := range tests {
 		test.init(mock)
 		t.Run(test.name, func(t *testing.T) {
-			post, err := daos.FindPostByID(context.Background(), test.postID)
+			post, err := daos.FindPostForAuthorByID(context.Background(), test.authorID, test.postID)
 			assert.Equal(t, test.wantErr, err != nil,
 				"wantErr: %t, got: %v", test.wantErr, err,
 			)

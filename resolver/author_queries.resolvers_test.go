@@ -6,15 +6,15 @@ import (
 	"testing"
 	"time"
 
-	"go-template/daos"
-	fm "go-template/gqlmodels"
-	"go-template/models"
-	"go-template/resolver"
-
 	"github.com/agiledragon/gomonkey/v2"
 	"github.com/stretchr/testify/assert"
 	"github.com/volatiletech/null/v8"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
+
+	"go-template/daos"
+	fm "go-template/gqlmodels"
+	"go-template/models"
+	"go-template/resolver"
 )
 
 // nolint: funlen

@@ -3,19 +3,19 @@ package resolver_test
 import (
 	"context"
 	"errors"
+	"testing"
+	"time"
+
+	"github.com/agiledragon/gomonkey/v2"
+	"github.com/stretchr/testify/assert"
+
 	"go-template/daos"
+	fm "go-template/gqlmodels"
 	"go-template/internal/constants"
 	"go-template/models"
 	"go-template/pkg/utl/rediscache"
 	"go-template/resolver"
 	"go-template/testutls"
-	"testing"
-
-	"github.com/agiledragon/gomonkey/v2"
-
-	fm "go-template/gqlmodels"
-
-	"github.com/stretchr/testify/assert"
 )
 
 type createRoleType struct {
@@ -150,6 +150,7 @@ func TestCreateRole(
 			func(t *testing.T) {
 				// Apply additional monkey patches based on test case name.
 				patch := tt.init()
+				time.Sleep(10 * time.Millisecond)
 				// Create a new context
 				c := context.Background()
 				// Call the resolver function

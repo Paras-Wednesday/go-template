@@ -55,7 +55,6 @@ func MockUser() *models.User {
 		LastLogin:          null.NewTime(time.Time{}, false),
 		LastPasswordChange: null.NewTime(time.Time{}, false),
 		Token:              null.StringFrom("asd"),
-		DeletedAt:          null.NewTime(time.Time{}, false),
 		UpdatedAt:          null.NewTime(time.Time{}, false),
 		RoleID:             null.IntFrom(1),
 	}
@@ -87,6 +86,7 @@ func MockJwt(role string) *jwt.Token {
 			"name": "John Doe",
 			"iat":  1516239022,
 			"role": role,
+			"type": "user",
 		},
 		Header: map[string]interface{}{
 			"token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9",
@@ -179,6 +179,7 @@ func MockAuthor() *models.Author {
 		LastName:  null.StringFrom("Last"),
 		CreatedAt: null.Time{},
 		UpdatedAt: null.Time{},
-		DeletedAt: null.Time{},
+		Email:     MockEmail,
+		Password:  "!@#!@12ASa3123",
 	}
 }

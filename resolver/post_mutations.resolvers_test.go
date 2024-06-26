@@ -3,15 +3,16 @@ package resolver_test
 import (
 	"context"
 	"fmt"
-	"go-template/daos"
-	fm "go-template/gqlmodels"
-	"go-template/models"
-	"go-template/resolver"
 	"testing"
 	"time"
 
 	"github.com/agiledragon/gomonkey/v2"
 	"github.com/stretchr/testify/assert"
+
+	"go-template/daos"
+	fm "go-template/gqlmodels"
+	"go-template/models"
+	"go-template/resolver"
 )
 
 func TestCreatePost(t *testing.T) {
@@ -25,8 +26,7 @@ func TestCreatePost(t *testing.T) {
 		{
 			name: "should create post",
 			req: fm.PostCreateInput{
-				AuthorID: "1",
-				Content:  "This is a good post",
+				Content: "This is a good post",
 			},
 			wantResp: &fm.Post{
 				ID:       "1",
@@ -99,12 +99,15 @@ func TestUpdatePost(t *testing.T) {
 			},
 			wantErr: false,
 			init: func() *gomonkey.Patches {
-				return gomonkey.ApplyFunc(daos.FindPostByID, func(ctx context.Context, id int) (*models.Post, error) {
-					return &models.Post{
-						ID:      1,
-						Content: "This is original content",
-					}, nil
-				}).ApplyFunc(daos.UpdatePost, func(ctx context.Context, post models.Post) (models.Post, error) {
+				return gomonkey.ApplyFunc(
+					daos.FindPostForAuthorByID,
+					func(ctx context.Context, authorId int, id int) (*models.Post, error) {
+						return &models.Post{
+							ID:       1,
+							AuthorID: 1,
+							Content:  "This is original content",
+						}, nil
+					}).ApplyFunc(daos.UpdatePost, func(ctx context.Context, post models.Post) (models.Post, error) {
 					return models.Post{
 						ID:      1,
 						Content: "this is updated content",
@@ -121,9 +124,11 @@ func TestUpdatePost(t *testing.T) {
 			wantResp: nil,
 			wantErr:  true,
 			init: func() *gomonkey.Patches {
-				return gomonkey.ApplyFunc(daos.FindPostByID, func(ctx context.Context, id int) (*models.Post, error) {
-					return nil, fmt.Errorf("can't find user")
-				})
+				return gomonkey.ApplyFunc(
+					daos.FindPostForAuthorByID,
+					func(ctx context.Context, authorId int, id int) (*models.Post, error) {
+						return nil, fmt.Errorf("can't find user")
+					})
 			},
 		},
 	}
@@ -168,7 +173,7 @@ func TestDeletePost(t *testing.T) {
 			},
 			wantErr: false,
 			init: func() *gomonkey.Patches {
-				return gomonkey.ApplyFunc(daos.FindPostByID, func(ctx context.Context, id int) (*models.Post, error) {
+				return gomonkey.ApplyFunc(daos.FindPostForAuthorByID, func(ctx context.Context, id int) (*models.Post, error) {
 					return &models.Post{
 						ID:       23,
 						AuthorID: 3,
@@ -187,7 +192,7 @@ func TestDeletePost(t *testing.T) {
 			wantResp: nil,
 			wantErr:  true,
 			init: func() *gomonkey.Patches {
-				return gomonkey.ApplyFunc(daos.FindPostByID, func(ctx context.Context, id int) (*models.Post, error) {
+				return gomonkey.ApplyFunc(daos.FindPostForAuthorByID, func(ctx context.Context, id int) (*models.Post, error) {
 					return nil, fmt.Errorf("can't find user")
 				})
 			},

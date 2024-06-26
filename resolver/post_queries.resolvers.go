@@ -8,6 +8,7 @@ import (
 	"context"
 	"go-template/daos"
 	"go-template/gqlmodels"
+	"go-template/internal/middleware/auth"
 	"go-template/pkg/utl/cnvrttogql"
 	"go-template/pkg/utl/convert"
 	"go-template/pkg/utl/resultwrapper"
@@ -18,7 +19,8 @@ import (
 
 // PostByID is the resolver for the postByID field.
 func (r *queryResolver) PostByID(ctx context.Context, id string) (*gqlmodels.Post, error) {
-	post, err := daos.FindPostByID(ctx, convert.StringToInt(id))
+	authorID := auth.AuthorIDFromContext(ctx)
+	post, err := daos.FindPostForAuthorByID(ctx, authorID, convert.StringToInt(id))
 	if err != nil {
 		return nil, resultwrapper.ResolverSQLError(err, "post fetch")
 	}
@@ -26,7 +28,7 @@ func (r *queryResolver) PostByID(ctx context.Context, id string) (*gqlmodels.Pos
 }
 
 // AllPostByAuthor is the resolver for the allPostByAuthor field.
-func (r *queryResolver) AllPostByAuthor(ctx context.Context, authorID string, pagination gqlmodels.Pagination) (*gqlmodels.PostsPayload, error) {
+func (r *queryResolver) AllPostByAuthor(ctx context.Context, pagination gqlmodels.Pagination) (*gqlmodels.PostsPayload, error) {
 	if pagination.Limit < 0 || pagination.Page < 1 {
 		return nil, resultwrapper.ResolverWrapperFromMessage(
 			http.StatusBadRequest, "pagination or limit can not be negative")
@@ -34,11 +36,10 @@ func (r *queryResolver) AllPostByAuthor(ctx context.Context, authorID string, pa
 
 	posts, count, err := daos.FindAllPostByAuthorWithCount(
 		ctx,
-		convert.StringToInt(authorID),
+		auth.AuthorIDFromContext(ctx),
 		qm.Limit(pagination.Limit),
 		qm.Offset(pagination.Limit*(pagination.Page-1)),
 	)
-
 	if err != nil {
 		return nil, resultwrapper.ResolverSQLError(err, "fetch author's post with pagination")
 	}

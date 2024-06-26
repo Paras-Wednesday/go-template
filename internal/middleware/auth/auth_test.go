@@ -210,7 +210,7 @@ func defineFailureNoUserWithThatEmail() testGraphQLMiddlewareType {
 		whiteListedQuery: false,
 		header:           "bearer 123",
 		wantStatus:       http.StatusOK,
-		err:              "No user found for this email address",
+		err:              "no user found with this email",
 		tokenParser: func(token string) (*jwt.Token, error) {
 			return testutls.MockJwt("SUPER_ADMIN"), nil
 		},

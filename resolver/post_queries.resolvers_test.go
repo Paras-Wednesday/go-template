@@ -3,16 +3,17 @@ package resolver_test
 import (
 	"context"
 	"fmt"
-	"go-template/daos"
-	fm "go-template/gqlmodels"
-	"go-template/models"
-	"go-template/resolver"
 	"testing"
 	"time"
 
 	"github.com/agiledragon/gomonkey/v2"
 	"github.com/stretchr/testify/assert"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
+
+	"go-template/daos"
+	fm "go-template/gqlmodels"
+	"go-template/models"
+	"go-template/resolver"
 )
 
 func TestPostByID(t *testing.T) {
@@ -33,13 +34,15 @@ func TestPostByID(t *testing.T) {
 			},
 			wantErr: false,
 			init: func() *gomonkey.Patches {
-				return gomonkey.ApplyFunc(daos.FindPostByID, func(ctx context.Context, id int) (*models.Post, error) {
-					return &models.Post{
-						ID:       1,
-						AuthorID: 1,
-						Content:  "content",
-					}, nil
-				})
+				return gomonkey.ApplyFunc(
+					daos.FindPostForAuthorByID,
+					func(ctx context.Context, authorID int, id int) (*models.Post, error) {
+						return &models.Post{
+							ID:       1,
+							AuthorID: 1,
+							Content:  "content",
+						}, nil
+					})
 			},
 		},
 		{
@@ -48,9 +51,11 @@ func TestPostByID(t *testing.T) {
 			wantResp: nil,
 			wantErr:  true,
 			init: func() *gomonkey.Patches {
-				return gomonkey.ApplyFunc(daos.FindPostByID, func(ctx context.Context, id int) (*models.Post, error) {
-					return nil, fmt.Errorf("can't find post")
-				})
+				return gomonkey.ApplyFunc(
+					daos.FindPostForAuthorByID,
+					func(ctx context.Context, authorID int, id int) (*models.Post, error) {
+						return nil, fmt.Errorf("can't find post")
+					})
 			},
 		},
 	}
@@ -161,7 +166,7 @@ func TestAllPostByAuthor(t *testing.T) {
 			}()
 			time.Sleep(10 * time.Millisecond)
 			response, err := resolver.Query().AllPostByAuthor(
-				context.Background(), test.authorID, test.pagination)
+				context.Background(), test.pagination)
 			assert.Equal(t, test.wantErr, err != nil)
 			if err == nil {
 				assert.Equal(t, test.wantResp, response)

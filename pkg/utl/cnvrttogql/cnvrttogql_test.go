@@ -99,7 +99,6 @@ func TestUserToGraphQlUser(t *testing.T) {
 		req  *models.User
 		want *graphql.User
 	}{
-
 		{
 			name: SuccessCase,
 			req:  nil,
@@ -129,11 +128,14 @@ func TestAuthorToGraphqlAuthor(t *testing.T) {
 				FirstName: "First",
 				LastName:  null.String{},
 				CreatedAt: null.TimeFrom(now),
+				Email:     "some.email@domain.com",
+				Password:  "This shouldn't be displayed",
 			},
 			expected: &graphql.Author{
 				ID:        "29",
 				FirstName: "First",
 				LastName:  "",
+				Email:     "some.email@domain.com",
 				CreatedAt: &nowMilli,
 			},
 		},
@@ -163,6 +165,7 @@ func TestAuthorsToGraphqlAuthorsPayload(t *testing.T) {
 					FirstName: "First",
 					LastName:  null.String{},
 					CreatedAt: null.TimeFrom(now),
+					Password:  "Shouldn't be displayed at any cost",
 				},
 			},
 			inputTotal: 2,

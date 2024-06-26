@@ -34,14 +34,12 @@ func TestCreateAuthor(t *testing.T) {
 	mock, cleanup, _ := testutls.SetupMockDB(t)
 	defer cleanup()
 
-	// As the insertion will return the "id", and "deleted_at"
+	// As the insertion will return the "id"
 	// column which are non default column
 	rows := sqlmock.NewRows([]string{
 		models.AuthorColumns.ID,
-		models.AuthorColumns.DeletedAt,
 	}).AddRow(
 		testutls.MockAuthor().ID,
-		testutls.MockAuthor().DeletedAt,
 	)
 
 	mock.ExpectQuery(regexp.QuoteMeta(`INSERT INTO "authors"`)).
@@ -211,6 +209,62 @@ func TestFindAuthorByLastName(t *testing.T) {
 		test.init(mock)
 		t.Run(test.testName, func(t *testing.T) {
 			author, err := daos.FindAuthorByLastName(context.Background(), test.lastName)
+			t.Logf("author: %+v", author)
+			assert.Equal(t, test.wantErr, err != nil,
+				"wantErr: %t, got: %v", test.wantErr, err)
+		})
+	}
+}
+
+func TestFindAuthorByEmail(t *testing.T) {
+	tests := []struct {
+		testName string
+		email    string
+		wantErr  bool
+		init     func(mock sqlmock.Sqlmock)
+	}{
+		{
+			testName: "Should return error in finding author",
+			email:    "invalid email",
+			wantErr:  true,
+			init: func(mock sqlmock.Sqlmock) {
+				mock.ExpectQuery(regexp.QuoteMeta(
+					`SELECT "authors".* FROM "authors"
+					 WHERE ("authors"."email" = $1) LIMIT 1;`,
+				)).
+					WithArgs().
+					WillReturnError(fmt.Errorf("No such user"))
+			},
+		},
+		{
+			testName: "Should return author with email \"valid.email@id.com\"",
+			email:    "valid.email@id.com",
+			wantErr:  false,
+			init: func(mock sqlmock.Sqlmock) {
+				rows := sqlmock.NewRows([]string{
+					models.AuthorColumns.ID,
+					models.AuthorColumns.Email,
+				}).AddRow(
+					testutls.MockAuthor().ID,
+					"valid.email@id.com",
+				)
+				mock.ExpectQuery(regexp.QuoteMeta(
+					`SELECT "authors".* FROM "authors"
+					 WHERE ("authors"."email" = $1) LIMIT 1;`,
+				)).
+					WithArgs().
+					WillReturnRows(rows)
+			},
+		},
+	}
+
+	mock, cleanup, _ := testutls.SetupMockDB(t)
+	defer cleanup()
+
+	for _, test := range tests {
+		test.init(mock)
+		t.Run(test.testName, func(t *testing.T) {
+			author, err := daos.FindAuthorByEmail(context.Background(), test.email)
 			t.Logf("author: %+v", author)
 			assert.Equal(t, test.wantErr, err != nil,
 				"wantErr: %t, got: %v", test.wantErr, err)

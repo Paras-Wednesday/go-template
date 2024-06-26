@@ -69,7 +69,6 @@ func testCreateUser(t *testing.T, tt struct {
 		"last_password_change",
 		"token",
 		"role_id",
-		"deleted_at",
 	}).AddRow(
 		testutls.MockUser().FirstName,
 		testutls.MockUser().LastName,
@@ -81,7 +80,6 @@ func testCreateUser(t *testing.T, tt struct {
 		testutls.MockUser().LastPasswordChange,
 		testutls.MockUser().Token,
 		testutls.MockUser().RoleID,
-		testutls.MockUser().DeletedAt,
 	)
 	mock.ExpectQuery(regexp.QuoteMeta(`INSERT INTO "users"`)).
 		WithArgs().

@@ -19,12 +19,7 @@ type AuthorCreateInput struct {
 	LastName  string `json:"lastName"`
 }
 
-type AuthorDeleteInput struct {
-	ID string `json:"id"`
-}
-
 type AuthorUpdateInput struct {
-	ID        string  `json:"id"`
 	FirstName *string `json:"firstName"`
 	LastName  *string `json:"lastName"`
 }

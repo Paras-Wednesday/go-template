@@ -75,7 +75,7 @@ type ComplexityRoot struct {
 		CreatePost     func(childComplexity int, input PostCreateInput) int
 		CreateRole     func(childComplexity int, input RoleCreateInput) int
 		CreateUser     func(childComplexity int, input UserCreateInput) int
-		DeleteAuthor   func(childComplexity int, input AuthorDeleteInput) int
+		DeleteAuthor   func(childComplexity int) int
 		DeletePost     func(childComplexity int, input PostDeleteInput) int
 		DeleteUser     func(childComplexity int) int
 		Login          func(childComplexity int, username string, password string) int
@@ -183,7 +183,7 @@ type MutationResolver interface {
 	RefreshToken(ctx context.Context, token string) (*RefreshTokenResponse, error)
 	CreateAuthor(ctx context.Context, input AuthorCreateInput) (*Author, error)
 	UpdateAuthor(ctx context.Context, input AuthorUpdateInput) (*Author, error)
-	DeleteAuthor(ctx context.Context, input AuthorDeleteInput) (*Author, error)
+	DeleteAuthor(ctx context.Context) (*Author, error)
 	CreatePost(ctx context.Context, input PostCreateInput) (*Post, error)
 	UpdatePost(ctx context.Context, input PostUpdateInput) (*Post, error)
 	DeletePost(ctx context.Context, input PostDeleteInput) (*Post, error)
@@ -380,12 +380,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			break
 		}
 
-		args, err := ec.field_Mutation_deleteAuthor_args(context.TODO(), rawArgs)
-		if err != nil {
-			return 0, false
-		}
-
-		return e.complexity.Mutation.DeleteAuthor(childComplexity, args["input"].(AuthorDeleteInput)), true
+		return e.complexity.Mutation.DeleteAuthor(childComplexity), true
 
 	case "Mutation.deletePost":
 		if e.complexity.Mutation.DeletePost == nil {
@@ -815,7 +810,6 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 	ec := executionContext{rc, e}
 	inputUnmarshalMap := graphql.BuildUnmarshalerMap(
 		ec.unmarshalInputAuthorCreateInput,
-		ec.unmarshalInputAuthorDeleteInput,
 		ec.unmarshalInputAuthorUpdateInput,
 		ec.unmarshalInputBooleanFilter,
 		ec.unmarshalInputFloatFilter,
@@ -940,13 +934,8 @@ input AuthorCreateInput {
 }
 
 input AuthorUpdateInput {
-    id: ID!
     firstName: String
     lastName: String
-}
-
-input AuthorDeleteInput {
-    id: ID!
 }
 
 type AuthorsPayload {
@@ -958,8 +947,9 @@ type AuthorsPayload {
 	{Name: "../schema/author_mutations.graphql", Input: `extend type Mutation {
     createAuthor(input: AuthorCreateInput!): Author!
     updateAuthor(input: AuthorUpdateInput!): Author!
-    deleteAuthor(input: AuthorDeleteInput!): Author!
-}`, BuiltIn: false},
+    deleteAuthor: Author!
+}
+`, BuiltIn: false},
 	{Name: "../schema/author_queries.graphql", Input: `extend type Query {
     author(id: ID!): Author!
     authors(pagination: Pagination!): AuthorsPayload!
@@ -1341,21 +1331,6 @@ func (ec *executionContext) field_Mutation_createUser_args(ctx context.Context, 
 	if tmp, ok := rawArgs["input"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
 		arg0, err = ec.unmarshalNUserCreateInput2goᚑtemplateᚋgqlmodelsᚐUserCreateInput(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["input"] = arg0
-	return args, nil
-}
-
-func (ec *executionContext) field_Mutation_deleteAuthor_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
-	var err error
-	args := map[string]interface{}{}
-	var arg0 AuthorDeleteInput
-	if tmp, ok := rawArgs["input"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
-		arg0, err = ec.unmarshalNAuthorDeleteInput2goᚑtemplateᚋgqlmodelsᚐAuthorDeleteInput(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -2513,7 +2488,7 @@ func (ec *executionContext) _Mutation_deleteAuthor(ctx context.Context, field gr
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().DeleteAuthor(rctx, fc.Args["input"].(AuthorDeleteInput))
+		return ec.resolvers.Mutation().DeleteAuthor(rctx)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -2554,17 +2529,6 @@ func (ec *executionContext) fieldContext_Mutation_deleteAuthor(ctx context.Conte
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Author", field.Name)
 		},
-	}
-	defer func() {
-		if r := recover(); r != nil {
-			err = ec.Recover(ctx, r)
-			ec.Error(ctx, err)
-		}
-	}()
-	ctx = graphql.WithFieldContext(ctx, fc)
-	if fc.Args, err = ec.field_Mutation_deleteAuthor_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
-		ec.Error(ctx, err)
-		return
 	}
 	return fc, nil
 }
@@ -7238,34 +7202,6 @@ func (ec *executionContext) unmarshalInputAuthorCreateInput(ctx context.Context,
 	return it, nil
 }
 
-func (ec *executionContext) unmarshalInputAuthorDeleteInput(ctx context.Context, obj interface{}) (AuthorDeleteInput, error) {
-	var it AuthorDeleteInput
-	asMap := map[string]interface{}{}
-	for k, v := range obj.(map[string]interface{}) {
-		asMap[k] = v
-	}
-
-	fieldsInOrder := [...]string{"id"}
-	for _, k := range fieldsInOrder {
-		v, ok := asMap[k]
-		if !ok {
-			continue
-		}
-		switch k {
-		case "id":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
-			it.ID, err = ec.unmarshalNID2string(ctx, v)
-			if err != nil {
-				return it, err
-			}
-		}
-	}
-
-	return it, nil
-}
-
 func (ec *executionContext) unmarshalInputAuthorUpdateInput(ctx context.Context, obj interface{}) (AuthorUpdateInput, error) {
 	var it AuthorUpdateInput
 	asMap := map[string]interface{}{}
@@ -7273,21 +7209,13 @@ func (ec *executionContext) unmarshalInputAuthorUpdateInput(ctx context.Context,
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"id", "firstName", "lastName"}
+	fieldsInOrder := [...]string{"firstName", "lastName"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
 			continue
 		}
 		switch k {
-		case "id":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
-			it.ID, err = ec.unmarshalNID2string(ctx, v)
-			if err != nil {
-				return it, err
-			}
 		case "firstName":
 			var err error
 
@@ -9759,11 +9687,6 @@ func (ec *executionContext) marshalNAuthor2ᚖgoᚑtemplateᚋgqlmodelsᚐAuthor
 
 func (ec *executionContext) unmarshalNAuthorCreateInput2goᚑtemplateᚋgqlmodelsᚐAuthorCreateInput(ctx context.Context, v interface{}) (AuthorCreateInput, error) {
 	res, err := ec.unmarshalInputAuthorCreateInput(ctx, v)
-	return res, graphql.ErrorOnPath(ctx, err)
-}
-
-func (ec *executionContext) unmarshalNAuthorDeleteInput2goᚑtemplateᚋgqlmodelsᚐAuthorDeleteInput(ctx context.Context, v interface{}) (AuthorDeleteInput, error) {
-	res, err := ec.unmarshalInputAuthorDeleteInput(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 

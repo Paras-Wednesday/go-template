@@ -32,7 +32,7 @@ func (r *queryResolver) AllPostByAuthor(ctx context.Context, authorID string, pa
 			http.StatusBadRequest, "pagination or limit can not be negative")
 	}
 
-	posts, count, err := daos.FindAllPostBylAuthorWithCount(
+	posts, count, err := daos.FindAllPostByAuthorWithCount(
 		ctx,
 		convert.StringToInt(authorID),
 		qm.Limit(pagination.Limit),

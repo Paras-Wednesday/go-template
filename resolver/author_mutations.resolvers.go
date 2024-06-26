@@ -11,9 +11,9 @@ import (
 
 	"go-template/daos"
 	"go-template/gqlmodels"
+	"go-template/internal/middleware/auth"
 	"go-template/models"
 	"go-template/pkg/utl/cnvrttogql"
-	"go-template/pkg/utl/convert"
 	"go-template/pkg/utl/resultwrapper"
 )
 
@@ -26,7 +26,6 @@ func (r *mutationResolver) CreateAuthor(ctx context.Context, input gqlmodels.Aut
 		FirstName: input.FirstName,
 		LastName:  null.StringFrom(input.LastName),
 	})
-
 	if err != nil {
 		return nil, resultwrapper.ResolverSQLError(err, "author insertion")
 	}
@@ -36,7 +35,7 @@ func (r *mutationResolver) CreateAuthor(ctx context.Context, input gqlmodels.Aut
 // UpdateAuthor is the resolver for the updateAuthor field.
 func (r *mutationResolver) UpdateAuthor(ctx context.Context, input gqlmodels.AuthorUpdateInput) (*gqlmodels.Author, error) {
 	// Fetch the author
-	author, err := daos.FindAuthorByID(ctx, convert.StringToInt(input.ID))
+	author, err := daos.FindAuthorByID(ctx, auth.AuthorIDFromContext(ctx))
 	if err != nil {
 		return nil, resultwrapper.ResolverSQLError(err, "find author by id")
 	}
@@ -59,9 +58,9 @@ func (r *mutationResolver) UpdateAuthor(ctx context.Context, input gqlmodels.Aut
 }
 
 // DeleteAuthor is the resolver for the deleteAuthor field.
-func (r *mutationResolver) DeleteAuthor(ctx context.Context, input gqlmodels.AuthorDeleteInput) (*gqlmodels.Author, error) {
+func (r *mutationResolver) DeleteAuthor(ctx context.Context) (*gqlmodels.Author, error) {
 	// Fetch the author
-	author, err := daos.FindAuthorByID(ctx, convert.StringToInt(input.ID))
+	author, err := daos.FindAuthorByID(ctx, auth.AuthorIDFromContext(ctx))
 	if err != nil {
 		return nil, resultwrapper.ResolverSQLError(err, "find author by id")
 	}

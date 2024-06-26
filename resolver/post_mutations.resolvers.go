@@ -6,7 +6,6 @@ package resolver
 
 import (
 	"context"
-
 	"go-template/daos"
 	"go-template/gqlmodels"
 	"go-template/internal/middleware/auth"

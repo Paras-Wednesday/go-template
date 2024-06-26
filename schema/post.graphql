@@ -4,7 +4,6 @@ type Post {
     content: String!
     createdAt: Int
     updatedAt: Int
-    deletedAt: Int
 }
 
 input PostCreateInput {

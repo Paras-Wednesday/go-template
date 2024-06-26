@@ -187,3 +187,89 @@ func TestAuthorsToGraphqlAuthorsPayload(t *testing.T) {
 		})
 	}
 }
+
+func TestPostToGraphqlPost(t *testing.T) {
+	now := time.Now()
+	nowMilli := int(now.UnixMilli())
+	tests := []struct {
+		name     string
+		input    *models.Post
+		expected *graphql.Post
+	}{
+		{
+			name:     "nil post should return nil",
+			input:    nil,
+			expected: nil,
+		},
+		{
+			name: SuccessCase,
+			input: &models.Post{
+				ID:        1,
+				AuthorID:  2,
+				Content:   "HI this is post",
+				CreatedAt: null.TimeFrom(now),
+			},
+			expected: &graphql.Post{
+				ID:        "1",
+				AuthorID:  "2",
+				Content:   "HI this is post",
+				CreatedAt: &nowMilli,
+			},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			assert.Equal(
+				t, test.expected, PostToGraphqlPost(test.input))
+		})
+	}
+}
+
+func TestPostsToGraphqlPostsPayload(t *testing.T) {
+	tests := []struct {
+		name       string
+		inputSlice models.PostSlice
+		inputCount int64
+		expected   *graphql.PostsPayload
+	}{
+		{
+			name: SuccessCase,
+			inputSlice: []*models.Post{
+				{
+					ID:       1,
+					AuthorID: 2,
+					Content:  "content",
+				},
+				{
+					ID:       2,
+					AuthorID: 2,
+					Content:  "content",
+				},
+			},
+			inputCount: 2,
+			expected: &graphql.PostsPayload{
+				Posts: []*graphql.Post{
+					{
+						ID:       "1",
+						AuthorID: "2",
+						Content:  "content",
+					},
+					{
+						ID:       "2",
+						AuthorID: "2",
+						Content:  "content",
+					},
+				},
+				Total: 2,
+			},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			assert.Equal(
+				t, test.expected, PostsToGraphqlPostsPayload(test.inputSlice, test.inputCount))
+		})
+	}
+}

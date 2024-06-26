@@ -1,4 +1,4 @@
 extend type Query{
     postByID(id: ID!): Post!
-    allPostByAuthor(authorID: ID!): PostsPayload!
+    allPostByAuthor(authorID: ID!, pagination: Pagination!): PostsPayload!
 }

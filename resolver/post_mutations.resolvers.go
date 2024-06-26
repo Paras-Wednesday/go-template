@@ -6,21 +6,57 @@ package resolver
 
 import (
 	"context"
-	"fmt"
+	"go-template/daos"
 	"go-template/gqlmodels"
+	"go-template/models"
+	"go-template/pkg/utl/cnvrttogql"
+	"go-template/pkg/utl/convert"
+	"go-template/pkg/utl/resultwrapper"
 )
 
 // CreatePost is the resolver for the createPost field.
 func (r *mutationResolver) CreatePost(ctx context.Context, input gqlmodels.PostCreateInput) (*gqlmodels.Post, error) {
-	panic(fmt.Errorf("not implemented: CreatePost - createPost"))
+	newPost := models.Post{
+		AuthorID: convert.StringToInt(input.AuthorID),
+		Content:  input.Content,
+	}
+
+	createdPost, err := daos.CreatePost(ctx, newPost)
+	if err != nil {
+		return nil, resultwrapper.ResolverSQLError(err, "post create")
+	}
+	return cnvrttogql.PostToGraphqlPost(&createdPost), nil
 }
 
 // UpdatePost is the resolver for the updatePost field.
 func (r *mutationResolver) UpdatePost(ctx context.Context, input gqlmodels.PostUpdateInput) (*gqlmodels.Post, error) {
-	panic(fmt.Errorf("not implemented: UpdatePost - updatePost"))
+	post, err := daos.FindPostByID(ctx, convert.StringToInt(input.ID))
+	if err != nil {
+		return nil, resultwrapper.ResolverSQLError(err, "post create")
+	}
+	// update the content
+	post.Content = input.Content
+
+	updatedPost, err := daos.UpdatePost(ctx, *post)
+	if err != nil {
+		return nil, resultwrapper.ResolverSQLError(err, "post create")
+	}
+	return cnvrttogql.PostToGraphqlPost(&updatedPost), nil
 }
 
 // DeletePost is the resolver for the deletePost field.
 func (r *mutationResolver) DeletePost(ctx context.Context, input gqlmodels.PostDeleteInput) (*gqlmodels.Post, error) {
-	panic(fmt.Errorf("not implemented: DeletePost - deletePost"))
+	post, err := daos.FindPostByID(ctx, convert.StringToInt(input.ID))
+	if err != nil {
+		return nil, resultwrapper.ResolverSQLError(err, "post fetch")
+	}
+
+	deleteCount, err := daos.DeletePost(ctx, *post)
+	if err != nil {
+		return nil, resultwrapper.ResolverSQLError(err, "post delete")
+	}
+	if deleteCount == 0 {
+		return nil, resultwrapper.ResolverWrapperFromMessage(500, "no post deleted")
+	}
+	return cnvrttogql.PostToGraphqlPost(post), nil
 }

@@ -6,7 +6,6 @@ type Author {
     password: String
     createdAt: Int
     updatedAt: Int
-    deletedAt: Int
 }
 
 input AuthorCreateInput {
@@ -17,13 +16,8 @@ input AuthorCreateInput {
 }
 
 input AuthorUpdateInput {
-    id: ID!
     firstName: String
     lastName: String
-}
-
-input AuthorDeleteInput {
-    id: ID!
 }
 
 type AuthorsPayload {

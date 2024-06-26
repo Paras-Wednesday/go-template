@@ -9,7 +9,6 @@ import (
 
 	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/stretchr/testify/assert"
-	"github.com/volatiletech/null/v8"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 
 	"go-template/daos"
@@ -34,8 +33,7 @@ func TestCreatePost(t *testing.T) {
 			init: func(mock sqlmock.Sqlmock) {
 				rows := sqlmock.NewRows([]string{
 					models.PostColumns.ID,
-					models.PostColumns.DeletedAt,
-				}).AddRow(1, null.Time{})
+				}).AddRow(1)
 				mock.ExpectQuery(regexp.QuoteMeta(
 					`INSERT INTO "posts"`,
 				)).WithArgs().

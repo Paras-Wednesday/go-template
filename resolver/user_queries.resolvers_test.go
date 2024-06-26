@@ -104,7 +104,7 @@ func initializeTestCases() []queryUsersArgs {
 			wantErr: false,
 			pagination: &fm.Pagination{
 				Limit: 1,
-				Page:  1,
+				Page:  2,
 			},
 			wantResp: testutls.MockUsers(),
 			init: func(mock sqlmock.Sqlmock) {

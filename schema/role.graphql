@@ -3,7 +3,6 @@ type Role {
     accessLevel: Int!
     name: String!
     updatedAt: Int
-    deletedAt: Int
     createdAt: Int
     users: [User]
 }
@@ -23,7 +22,6 @@ input RoleWhere {
     accessLevel: IntFilter
     name: StringFilter
     updatedAt: IntFilter
-    deletedAt: IntFilter
     createdAt: IntFilter
     users: UserWhere
     or: RoleWhere
@@ -38,7 +36,6 @@ input RoleUpdateInput {
     accessLevel: Int
     name: String
     updatedAt: Int
-    deletedAt: Int
     createdAt: Int
 }
 

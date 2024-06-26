@@ -67,7 +67,6 @@ func RoleToGraphqlRole(r *models.Role, count int) *graphql.Role {
 		Name:        r.Name,
 		UpdatedAt:   convert.NullDotTimeToPointerInt(r.UpdatedAt),
 		CreatedAt:   convert.NullDotTimeToPointerInt(r.CreatedAt),
-		DeletedAt:   convert.NullDotTimeToPointerInt(r.DeletedAt),
 		Users:       UsersToGraphQlUsers(users, count),
 	}
 }
@@ -80,7 +79,6 @@ func AuthorToGraphQlAuthor(a models.Author) *graphql.Author {
 		Email:     a.Email,
 		CreatedAt: convert.NullDotTimeToPointerInt(a.CreatedAt),
 		UpdatedAt: convert.NullDotTimeToPointerInt(a.UpdatedAt),
-		DeletedAt: convert.NullDotTimeToPointerInt(a.DeletedAt),
 	}
 }
 
@@ -107,7 +105,6 @@ func PostToGraphqlPost(post *models.Post) *graphql.Post {
 		Content:   post.Content,
 		CreatedAt: convert.NullDotTimeToPointerInt(post.CreatedAt),
 		UpdatedAt: convert.NullDotTimeToPointerInt(post.UpdatedAt),
-		DeletedAt: convert.NullDotTimeToPointerInt(post.DeletedAt),
 	}
 }
 

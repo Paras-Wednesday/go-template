@@ -115,7 +115,6 @@ func createUserSuccessCase() createUserType {
 			Active:             convert.NullDotBoolToPointerBool(testutls.MockUser().Active),
 			LastLogin:          convert.NullDotTimeToPointerInt(testutls.MockUser().LastLogin),
 			LastPasswordChange: convert.NullDotTimeToPointerInt(testutls.MockUser().LastPasswordChange),
-			DeletedAt:          convert.NullDotTimeToPointerInt(testutls.MockUser().DeletedAt),
 			UpdatedAt:          convert.NullDotTimeToPointerInt(testutls.MockUser().UpdatedAt),
 		},
 		wantErr: false,
@@ -133,7 +132,6 @@ func createUserSuccessCase() createUserType {
 					Active:             testutls.MockUser().Active,
 					LastLogin:          testutls.MockUser().LastLogin,
 					LastPasswordChange: testutls.MockUser().LastPasswordChange,
-					DeletedAt:          testutls.MockUser().DeletedAt,
 					UpdatedAt:          testutls.MockUser().UpdatedAt,
 				}, nil
 			}).ApplyFunc(throttle.Check, func(ctx context.Context, limit int, dur time.Duration) error {

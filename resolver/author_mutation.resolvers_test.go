@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"go-template/daos"
 	fm "go-template/gqlmodels"
+	"go-template/internal/middleware/auth"
 	"go-template/models"
 	"go-template/resolver"
 	"go-template/testutls"
@@ -92,7 +93,6 @@ func TestUpdateAuthor(t *testing.T) {
 		{
 			name: "Should update Author",
 			req: fm.AuthorUpdateInput{
-				ID:        "1",
 				FirstName: &testutls.MockAuthor().FirstName,
 			},
 			wantResp: &fm.Author{
@@ -113,7 +113,6 @@ func TestUpdateAuthor(t *testing.T) {
 		{
 			name: "Should not update Author",
 			req: fm.AuthorUpdateInput{
-				ID:        "fjdk",
 				FirstName: &testutls.MockAuthor().FirstName,
 			},
 			wantResp: nil,
@@ -150,16 +149,12 @@ func TestUpdateAuthor(t *testing.T) {
 func TestDeleteAuthor(t *testing.T) {
 	tests := []struct {
 		name     string
-		req      fm.AuthorDeleteInput
 		wantResp *fm.Author
 		wantErr  bool
 		init     func() *gomonkey.Patches
 	}{
 		{
 			name: "Should delete Author",
-			req: fm.AuthorDeleteInput{
-				ID: "33",
-			},
 			wantResp: &fm.Author{
 				ID:        "33",
 				FirstName: "fname",
@@ -179,10 +174,7 @@ func TestDeleteAuthor(t *testing.T) {
 			},
 		},
 		{
-			name: "Should not delete Author",
-			req: fm.AuthorDeleteInput{
-				ID: "fjdk",
-			},
+			name:     "Should not delete Author",
 			wantResp: nil,
 			wantErr:  true,
 			init: func() *gomonkey.Patches {
@@ -204,7 +196,8 @@ func TestDeleteAuthor(t *testing.T) {
 				}
 			}()
 			time.Sleep(10 * time.Millisecond)
-			resp, err := resolver.Mutation().DeleteAuthor(context.Background(), test.req)
+			ctx := context.WithValue(context.Background(), auth.AuthorCtxKey, testutls.MockAuthor())
+			resp, err := resolver.Mutation().DeleteAuthor(ctx)
 			assert.Equal(t, test.wantErr, err != nil, "expected: %t got: %v", test.wantErr, err)
 			if err == nil {
 				assert.Equal(t, test.wantResp, resp)

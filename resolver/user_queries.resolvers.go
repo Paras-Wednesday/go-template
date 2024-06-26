@@ -6,14 +6,15 @@ package resolver
 
 import (
 	"context"
+
+	"github.com/volatiletech/sqlboiler/v4/queries/qm"
+
 	"go-template/daos"
 	"go-template/gqlmodels"
 	"go-template/internal/middleware/auth"
 	"go-template/pkg/utl/cnvrttogql"
 	"go-template/pkg/utl/rediscache"
 	"go-template/pkg/utl/resultwrapper"
-
-	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 )
 
 // Me is the resolver for the me field.
@@ -31,8 +32,11 @@ func (r *queryResolver) Me(ctx context.Context) (*gqlmodels.User, error) {
 func (r *queryResolver) Users(ctx context.Context, pagination *gqlmodels.Pagination) (*gqlmodels.UsersPayload, error) {
 	var queryMods []qm.QueryMod
 	if pagination != nil {
-		if pagination.Limit != 0 {
-			queryMods = append(queryMods, qm.Limit(pagination.Limit), qm.Offset(pagination.Page*pagination.Limit))
+		if pagination.Limit >= 0 && pagination.Page > 0 {
+			queryMods = append(queryMods,
+				qm.Limit(pagination.Limit),
+				qm.Offset((pagination.Page-1)*pagination.Limit),
+			)
 		}
 	}
 

@@ -139,6 +139,7 @@ func TestCheck(t *testing.T) {
 	})
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			time.Sleep(10 * time.Millisecond)
 			tt.args.ctx = context.WithValue(tt.args.ctx, userIPAdress, tt.args.ip)
 			patches := ApplyFunc(os.Getenv, func(key string) string {
 				if key == "ENVIRONMENT_NAME" {

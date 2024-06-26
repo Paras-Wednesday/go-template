@@ -581,7 +581,7 @@ func testAuthorsSelect(t *testing.T) {
 }
 
 var (
-	authorDBTypes = map[string]string{`ID`: `integer`, `FirstName`: `text`, `LastName`: `text`, `CreatedAt`: `timestamp with time zone`, `UpdatedAt`: `timestamp with time zone`, `DeletedAt`: `timestamp with time zone`, `Email`: `text`, `Password`: `text`}
+	authorDBTypes = map[string]string{`ID`: `integer`, `FirstName`: `text`, `LastName`: `text`, `CreatedAt`: `timestamp with time zone`, `UpdatedAt`: `timestamp with time zone`, `Email`: `text`, `Password`: `text`}
 	_             = bytes.MinRead
 )
 

@@ -13,7 +13,6 @@ type User {
     token: String
     role: Role
     createdAt: Int
-    deletedAt: Int
     updatedAt: Int
 }
 
@@ -37,7 +36,6 @@ input UserWhere {
     token: StringFilter
     role: RoleWhere
     createdAt: IntFilter
-    deletedAt: IntFilter
     updatedAt: IntFilter
     or: UserWhere
     and: UserWhere

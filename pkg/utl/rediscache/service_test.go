@@ -467,6 +467,7 @@ func TestIncVisits(t *testing.T) {
 			defer patch.Reset()
 		}
 		t.Run(tt.name, func(t *testing.T) {
+			time.Sleep(10 * time.Millisecond)
 			conn.Command("INCR", tt.args.path).Expect([]byte(fmt.Sprint(tt.want)))
 			got, err := IncVisits(tt.args.path)
 			if (err != nil) != tt.wantErr {
@@ -499,6 +500,7 @@ func TestStartVisits(t *testing.T) {
 
 	for _, tt := range tests {
 		patches := tt.init(tt.args)
+		time.Sleep(10 * time.Millisecond)
 
 		t.Run(tt.name, func(t *testing.T) {
 			err := StartVisits(tt.args.path, time.Second)

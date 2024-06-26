@@ -7,14 +7,13 @@ package resolver
 import (
 	"context"
 	"fmt"
-
-	null "github.com/volatiletech/null/v8"
-
 	"go-template/daos"
 	"go-template/gqlmodels"
 	"go-template/internal/middleware/auth"
 	"go-template/pkg/utl/convert"
 	"go-template/pkg/utl/resultwrapper"
+
+	null "github.com/volatiletech/null/v8"
 )
 
 // Login is the resolver for the login field.

@@ -286,7 +286,7 @@ func TestFindAllPostsByAuthorWithCount(t *testing.T) {
 					WillReturnRows(dbQuery.DbResponse)
 			}
 			t.Run(test.name, func(t *testing.T) {
-				posts, count, err := daos.FindAllPostBylAuthorWithCount(
+				posts, count, err := daos.FindAllPostByAuthorWithCount(
 					context.Background(), test.authorID, test.qms...,
 				)
 				t.Logf("posts: %+v", posts)

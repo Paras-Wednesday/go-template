@@ -112,7 +112,7 @@ func TestAllPostByAuthor(t *testing.T) {
 			wantErr: false,
 			init: func() *gomonkey.Patches {
 				return gomonkey.ApplyFunc(
-					daos.FindAllPostBylAuthorWithCount,
+					daos.FindAllPostByAuthorWithCount,
 					func(ctx context.Context,
 						authorID int,
 						queries ...qm.QueryMod,
@@ -144,7 +144,7 @@ func TestAllPostByAuthor(t *testing.T) {
 			wantErr: true,
 			init: func() *gomonkey.Patches {
 				return gomonkey.ApplyFunc(
-					daos.FindAllPostBylAuthorWithCount,
+					daos.FindAllPostByAuthorWithCount,
 					func(ctx context.Context,
 						authorID int,
 						queries ...qm.QueryMod,

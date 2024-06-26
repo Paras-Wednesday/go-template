@@ -49,7 +49,7 @@ func FindPostForAuthorByID(ctx context.Context, authorID int, postID int) (*mode
 		One(ctx, contextExecutor)
 }
 
-func FindAllPostBylAuthorWithCount(ctx context.Context, authorID int, queries ...qm.QueryMod) (models.PostSlice, int64, error) {
+func FindAllPostByAuthorWithCount(ctx context.Context, authorID int, queries ...qm.QueryMod) (models.PostSlice, int64, error) {
 	contextExecutor := GetContextExecutor(nil)
 
 	authQueryMode := models.PostWhere.AuthorID.EQ(authorID)

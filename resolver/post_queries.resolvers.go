@@ -34,7 +34,7 @@ func (r *queryResolver) AllPostByAuthor(ctx context.Context, pagination gqlmodel
 			http.StatusBadRequest, "pagination or limit can not be negative")
 	}
 
-	posts, count, err := daos.FindAllPostBylAuthorWithCount(
+	posts, count, err := daos.FindAllPostByAuthorWithCount(
 		ctx,
 		auth.AuthorIDFromContext(ctx),
 		qm.Limit(pagination.Limit),

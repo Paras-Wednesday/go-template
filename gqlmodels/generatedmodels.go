@@ -46,6 +46,12 @@ type LoginResponse struct {
 	RefreshToken string `json:"refreshToken"`
 }
 
+type Post struct {
+	ID        int    `json:"id"`
+	Content   string `json:"content"`
+	CreatedAt *int   `json:"createdAt"`
+}
+
 type RefreshTokenResponse struct {
 	Token string `json:"token"`
 }

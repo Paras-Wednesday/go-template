@@ -4,6 +4,7 @@ import (
 	"context"
 	"net/http"
 	"os"
+	"sync"
 	"time"
 
 	graphql "go-template/gqlmodels"
@@ -13,6 +14,7 @@ import (
 	"go-template/internal/postgres"
 	"go-template/internal/server"
 	throttle "go-template/pkg/utl/throttle"
+	model "go-template/post-model"
 	"go-template/resolver"
 
 	graphql2 "github.com/99designs/gqlgen/graphql"
@@ -54,7 +56,11 @@ func Start(cfg *config.Configuration) (*echo.Echo, error) {
 	// Set up GraphQL
 	observers := map[string]chan *graphql.User{}
 	graphqlHandler := handler.New(graphql.NewExecutableSchema(graphql.Config{
-		Resolvers: &resolver.Resolver{Observers: observers},
+		Resolvers: &resolver.Resolver{
+			Mutex:     sync.Mutex{},
+			Observers: observers,
+			PostDAO:   model.NewPostRepo(),
+		},
 	}))
 
 	graphqlHandler.AroundOperations(func(ctx context.Context, next graphql2.OperationHandler) graphql2.ResponseHandler {

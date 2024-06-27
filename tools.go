@@ -9,4 +9,5 @@ import (
 	_ "github.com/masahiro331/go-commitlinter"
 	_ "github.com/rubenv/sql-migrate"
 	_ "github.com/volatiletech/sqlboiler"
+	_ "go.uber.org/mock/mockgen"
 )

@@ -4,14 +4,14 @@ import (
 	"context"
 	"reflect"
 
-	"go-template/daos"
-	"go-template/models"
-	resultwrapper "go-template/pkg/utl/resultwrapper"
-
 	graphql2 "github.com/99designs/gqlgen/graphql"
 	jwt "github.com/dgrijalva/jwt-go"
 	"github.com/labstack/echo/v4"
 	"github.com/vektah/gqlparser/v2/ast"
+
+	"go-template/daos"
+	"go-template/models"
+	resultwrapper "go-template/pkg/utl/resultwrapper"
 )
 
 type key string
@@ -71,7 +71,7 @@ func GqlMiddleware() echo.MiddlewareFunc {
 // WhiteListedOperations...
 var WhiteListedOperations = map[string][]string{
 	"query":        {"__schema", "introspectionquery", "userNotification"},
-	"mutation":     {"login", "create_post"},
+	"mutation":     {"login", "create_post", "get_post"},
 	"subscription": {"userNotification"},
 }
 
@@ -88,6 +88,7 @@ func contains(s []string, e string) bool {
 	}
 	return false
 }
+
 func getAccessNeeds(operation *ast.OperationDefinition) (needsAuthAccess bool, needsSuperAdminAccess bool) {
 	operationName := string(operation.Operation)
 	for _, selectionSet := range operation.SelectionSet {
@@ -106,14 +107,15 @@ func getAccessNeeds(operation *ast.OperationDefinition) (needsAuthAccess bool, n
 func GraphQLMiddleware(
 	ctx context.Context,
 	tokenParser TokenParser,
-	next graphql2.OperationHandler) graphql2.ResponseHandler {
+	next graphql2.OperationHandler,
+) graphql2.ResponseHandler {
 	operation := graphql2.GetOperationContext(ctx).Operation
 	needsAuthAccess, needsSuperAdminAccess := getAccessNeeds(operation)
 	if !needsAuthAccess && !needsSuperAdminAccess {
 		return next(ctx)
 	}
 	// strip token
-	var tokenStr = ctx.Value(authorization).(string)
+	tokenStr := ctx.Value(authorization).(string)
 	if len(tokenStr) == 0 {
 		return resultwrapper.HandleGraphQLError("Authorization header is missing")
 	}

@@ -22,6 +22,7 @@ import (
 //go:generate mockgen -source=resolver.go -destination=./mocks/mock.go PostDAO
 type PostDAO interface {
 	CreatePost(post pm.PostModel) (pm.PostModel, error)
+	GetPost(id int) (pm.PostModel, error)
 }
 
 // Resolver ...

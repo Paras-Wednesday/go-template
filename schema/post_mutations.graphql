@@ -1,3 +1,4 @@
 extend type Mutation {
     create_post(id: Int!, content: String!): Post!
+    get_post(id: Int!): Post!
 }

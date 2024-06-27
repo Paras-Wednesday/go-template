@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"testing"
+	"time"
 
 	gomock "go.uber.org/mock/gomock"
 
@@ -52,4 +53,50 @@ func TestCreatePostFail(t *testing.T) {
 		t.Error("expected error got no error")
 	}
 	t.Logf("response: %+v, err: %v", response, err)
+}
+
+func TestGetPostSuccess(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockDAO := mock_resolver.NewMockPostDAO(ctrl)
+	post := model.PostModel{
+		ID:        1,
+		Content:   "Mock content",
+		CreatedAt: time.Now(),
+	}
+	mockDAO.EXPECT().GetPost(post.ID).Return(post, nil)
+
+	resolver := resolver.Resolver{
+		PostDAO: mockDAO,
+	}
+
+	response, err := resolver.Mutation().GetPost(context.Background(), post.ID)
+	if err != nil {
+		t.Errorf("expected no error, got: %v", err)
+	}
+	t.Logf("response: %+v, err: %+v", response, err)
+}
+
+func TestGetPostFail(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockDAO := mock_resolver.NewMockPostDAO(ctrl)
+	post := model.PostModel{
+		ID:        1,
+		Content:   "Mock content",
+		CreatedAt: time.Now(),
+	}
+	mockDAO.EXPECT().GetPost(post.ID).Return(model.PostModel{}, fmt.Errorf("get post error"))
+
+	resolver := resolver.Resolver{
+		PostDAO: mockDAO,
+	}
+
+	response, err := resolver.Mutation().GetPost(context.Background(), post.ID)
+	if err == nil {
+		t.Error("expected error got no error")
+	}
+	t.Logf("response: %+v, err: %+v", response, err)
 }

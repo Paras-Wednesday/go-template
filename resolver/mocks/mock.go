@@ -53,3 +53,18 @@ func (mr *MockPostDAOMockRecorder) CreatePost(post any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreatePost", reflect.TypeOf((*MockPostDAO)(nil).CreatePost), post)
 }
+
+// GetPost mocks base method.
+func (m *MockPostDAO) GetPost(id int) (model.PostModel, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetPost", id)
+	ret0, _ := ret[0].(model.PostModel)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetPost indicates an expected call of GetPost.
+func (mr *MockPostDAOMockRecorder) GetPost(id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPost", reflect.TypeOf((*MockPostDAO)(nil).GetPost), id)
+}

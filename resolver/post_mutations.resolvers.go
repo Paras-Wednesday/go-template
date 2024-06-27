@@ -6,8 +6,9 @@ package resolver
 
 import (
 	"context"
+
 	"go-template/gqlmodels"
-	"go-template/post-model"
+	model "go-template/post-model"
 )
 
 // CreatePost is the resolver for the create_post field.
@@ -23,6 +24,20 @@ func (r *mutationResolver) CreatePost(ctx context.Context, id int, content strin
 	return &gqlmodels.Post{
 		ID:        id,
 		Content:   content,
+		CreatedAt: &createdAt,
+	}, nil
+}
+
+// GetPost is the resolver for the get_post field.
+func (r *mutationResolver) GetPost(ctx context.Context, id int) (*gqlmodels.Post, error) {
+	post, err := r.PostDAO.GetPost(id)
+	if err != nil {
+		return nil, err
+	}
+	createdAt := int(post.CreatedAt.UnixNano())
+	return &gqlmodels.Post{
+		ID:        post.ID,
+		Content:   post.Content,
 		CreatedAt: &createdAt,
 	}, nil
 }

@@ -161,7 +161,6 @@ func TestCreateUser(t *testing.T) {
 	for _, tt := range cases {
 		t.Run(tt.name, func(t *testing.T) {
 			patch := tt.init()
-			time.Sleep(time.Duration(100000))
 			response, err := resolver.Mutation().CreateUser(context.Background(), tt.req)
 			if tt.wantResp != nil {
 				assert.Equal(t, tt.wantResp, response)
@@ -279,7 +278,6 @@ func TestUpdateUser(
 			tt.name,
 			func(t *testing.T) {
 				patches := tt.init()
-				time.Sleep(10 * time.Millisecond)
 				c := context.Background()
 				ctx := context.WithValue(c, testutls.UserKey, testutls.MockUser())
 				response, err := resolver1.Mutation().UpdateUser(ctx, tt.req)
@@ -373,7 +371,6 @@ func TestDeleteUser(
 			tt.name,
 			func(t *testing.T) {
 				patch := tt.init()
-				time.Sleep(10 * time.Millisecond)
 				// get user by id
 				c := context.Background()
 				ctx := context.WithValue(c, testutls.UserKey, testutls.MockUser())

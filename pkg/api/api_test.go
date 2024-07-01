@@ -173,7 +173,6 @@ func TestStart(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			patches := tt.init(e, tt)
-			time.Sleep(10 * time.Millisecond)
 			if tt.getTransportCalled || tt.postTransportCalled ||
 				tt.optionsTransportCalled || tt.multipartFormTransportCalled {
 				testWithTransportCalls(t, tt)

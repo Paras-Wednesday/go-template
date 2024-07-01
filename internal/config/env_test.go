@@ -5,7 +5,6 @@ import (
 	. "go-template/internal/config"
 	"os"
 	"testing"
-	"time"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -42,7 +41,6 @@ func TestGetString(t *testing.T) {
 			if tt.success {
 				os.Setenv(tt.args.key, tt.want)
 			}
-			time.Sleep(time.Microsecond)
 
 			if got := GetString(tt.args.key); got != tt.want {
 				t.Errorf("GetString() = %v, want %v", got, tt.want)

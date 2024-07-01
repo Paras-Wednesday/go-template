@@ -73,7 +73,6 @@ func TestAuthor(t *testing.T) {
 					patch.Reset()
 				}
 			}()
-			time.Sleep(10 * time.Millisecond)
 
 			author, err := resolver.Query().Author(context.Background(), test.inputID)
 			assert.Equal(t, test.wantErr, err != nil,
@@ -186,7 +185,6 @@ func TestAuthors(t *testing.T) {
 					patch.Reset()
 				}
 			}()
-			time.Sleep(10 * time.Millisecond)
 			authorPayload, err := resolver.Query().Authors(context.Background(), test.input)
 			assert.Equal(t, test.wantErr, err != nil,
 				"wantErr: %t, got: %v", test.wantErr, err,

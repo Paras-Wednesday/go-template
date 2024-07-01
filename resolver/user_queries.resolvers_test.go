@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"regexp"
 	"testing"
-	"time"
 
 	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/agiledragon/gomonkey/v2"
@@ -67,7 +66,6 @@ func TestMe(t *testing.T) {
 	resolver1 := &resolver.Resolver{}
 	for _, tt := range cases {
 		patches := tt.init(tt.args)
-		time.Sleep(10 * time.Millisecond)
 		response, err := resolver1.Query().Me(context.TODO())
 		if tt.wantResp != nil && response != nil {
 			assert.Equal(t, tt.wantResp, response)

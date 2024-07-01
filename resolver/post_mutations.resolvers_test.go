@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"testing"
-	"time"
 
 	"github.com/agiledragon/gomonkey/v2"
 	"github.com/stretchr/testify/assert"
@@ -67,7 +66,6 @@ func TestCreatePost(t *testing.T) {
 					patch.Reset()
 				}
 			}()
-			time.Sleep(10 * time.Millisecond)
 			response, err := resolver.Mutation().CreatePost(context.Background(), test.req)
 			assert.Equal(t, test.wantErr, err != nil)
 			if err == nil {
@@ -142,7 +140,6 @@ func TestUpdatePost(t *testing.T) {
 					patch.Reset()
 				}
 			}()
-			time.Sleep(10 * time.Millisecond)
 			response, err := resolver.Mutation().UpdatePost(context.Background(), test.req)
 			assert.Equal(t, test.wantErr, err != nil)
 			if err == nil {
@@ -208,7 +205,6 @@ func TestDeletePost(t *testing.T) {
 					patch.Reset()
 				}
 			}()
-			time.Sleep(10 * time.Millisecond)
 			response, err := resolver.Mutation().DeletePost(context.Background(), test.req)
 			assert.Equal(t, test.wantErr, err != nil)
 			if err == nil {

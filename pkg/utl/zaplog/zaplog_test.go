@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"os"
 	"testing"
-	"time"
 
 	"github.com/agiledragon/gomonkey/v2"
 	"github.com/stretchr/testify/assert"
@@ -125,7 +124,6 @@ func TestInitLogger(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			time.Sleep(10 * time.Millisecond)
 			patchEnv := gomonkey.ApplyFunc(os.Getenv, func(key string) string {
 				return "production"
 			})

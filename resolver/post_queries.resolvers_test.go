@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"testing"
-	"time"
 
 	"github.com/agiledragon/gomonkey/v2"
 	"github.com/stretchr/testify/assert"
@@ -69,7 +68,6 @@ func TestPostByID(t *testing.T) {
 					patch.Reset()
 				}
 			}()
-			time.Sleep(10 * time.Millisecond)
 			response, err := resolver.Query().PostByID(context.Background(), test.id)
 			assert.Equal(t, test.wantErr, err != nil)
 			if err == nil {
@@ -164,7 +162,6 @@ func TestAllPostByAuthor(t *testing.T) {
 					patch.Reset()
 				}
 			}()
-			time.Sleep(10 * time.Millisecond)
 			response, err := resolver.Query().AllPostByAuthor(
 				context.Background(), test.pagination)
 			assert.Equal(t, test.wantErr, err != nil)

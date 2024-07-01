@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"reflect"
 	"testing"
-	"time"
 
 	. "github.com/agiledragon/gomonkey/v2"
 	"github.com/gomodule/redigo/redis"
@@ -38,7 +37,6 @@ func Test_redisDial(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			time.Sleep(10 * time.Millisecond)
 			if tt.wantErr {
 				ApplyFunc(redigo.Dial, func(string, string, ...redis.DialOption) (redis.Conn, error) {
 					return nil, fmt.Errorf("some error")

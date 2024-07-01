@@ -6,7 +6,6 @@ import (
 	"reflect"
 	"strings"
 	"testing"
-	"time"
 
 	"github.com/agiledragon/gomonkey/v2"
 	"github.com/stretchr/testify/assert"
@@ -346,7 +345,6 @@ func TestLogin(
 			tt.name,
 			func(t *testing.T) {
 				patch := tt.init()
-				time.Sleep(10 * time.Millisecond)
 				c := context.Background()
 				// Call the login mutation with the given arguments and check the response and error against the expected values
 				response, err := resolver1.Mutation().Login(c, tt.req.UserName, tt.req.Password)
@@ -549,7 +547,6 @@ func TestChangePassword(
 			func(t *testing.T) {
 				// Handle the case where there is an error while loading the configuration
 				patches := tt.init()
-				time.Sleep(10 * time.Millisecond)
 				// Set up the context with the mock user
 				c := context.Background()
 				ctx := context.WithValue(c, testutls.UserKey, testutls.MockUser())
@@ -699,7 +696,6 @@ func TestRefreshToken(t *testing.T) {
 			func(t *testing.T) {
 				// Handle the case where authentication token is invalid
 				patches := tt.init()
-				time.Sleep(10 * time.Millisecond)
 				// Set up the context with the mock user
 				c := context.Background()
 				ctx := context.WithValue(c, testutls.UserKey, testutls.MockUser())
@@ -751,7 +747,6 @@ func TestAuthorLogin(t *testing.T) {
 					patch.Reset()
 				}
 			}()
-			time.Sleep(10 * time.Millisecond)
 			resolver := resolver.Resolver{}
 			resp, err := resolver.Mutation().AuthorLogin(
 				context.Background(), test.input.email, test.input.password,

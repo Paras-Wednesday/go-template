@@ -3,18 +3,18 @@ package resolver_test
 import (
 	"context"
 	"fmt"
+	"testing"
+
+	"github.com/agiledragon/gomonkey/v2"
+	"github.com/stretchr/testify/assert"
+	"github.com/volatiletech/null/v8"
+
 	"go-template/daos"
 	fm "go-template/gqlmodels"
 	"go-template/internal/middleware/auth"
 	"go-template/models"
 	"go-template/resolver"
 	"go-template/testutls"
-	"testing"
-	"time"
-
-	"github.com/agiledragon/gomonkey/v2"
-	"github.com/stretchr/testify/assert"
-	"github.com/volatiletech/null/v8"
 )
 
 func TestCreateAuthor(t *testing.T) {
@@ -70,7 +70,6 @@ func TestCreateAuthor(t *testing.T) {
 				}
 			}()
 			// sleep to reset the monkey patch
-			time.Sleep(10 * time.Millisecond)
 
 			response, err := resolver.Mutation().CreateAuthor(context.Background(), test.req)
 			assert.Equal(t, test.wantErr, err != nil)
@@ -135,7 +134,6 @@ func TestUpdateAuthor(t *testing.T) {
 					patch.Reset()
 				}
 			}()
-			time.Sleep(10 * time.Millisecond)
 			resp, err := resolver.Mutation().UpdateAuthor(context.Background(), test.req)
 			assert.Equal(t, test.wantErr, err != nil, "expected: %t got: %v", test.wantErr, err)
 			if err == nil {
@@ -195,7 +193,6 @@ func TestDeleteAuthor(t *testing.T) {
 					patch.Reset()
 				}
 			}()
-			time.Sleep(10 * time.Millisecond)
 			ctx := context.WithValue(context.Background(), auth.AuthorCtxKey, testutls.MockAuthor())
 			resp, err := resolver.Mutation().DeleteAuthor(ctx)
 			assert.Equal(t, test.wantErr, err != nil, "expected: %t got: %v", test.wantErr, err)
